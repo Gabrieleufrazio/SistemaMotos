@@ -1,0 +1,45 @@
+{% extends "layout_base.html" %}
+{% block titulo %}Folha de Exibição{% endblock %}
+{% block content %}
+<h4>🖨️ Folha de Exibição</h4>
+<p class="text-muted">Selecione uma moto e, opcionalmente, envie uma foto para incluir no PDF.</p>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="alert alert-{{ category }}">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+<form method="post" enctype="multipart/form-data" class="mb-4">
+  <div class="row g-3 align-items-end">
+    <div class="col-md-6">
+      <label class="form-label">Moto</label>
+      <select name="moto_id" class="form-select" required>
+        <option value="">Selecione...</option>
+        {% for m in motos %}
+          <option value="{{ m[0] }}">#{{ m[0] }} - {{ m[1] }} {{ m[2] }} {{ m[3] }} | {{ m[4] }} | {{ m[5] | br_moeda }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">Foto (opcional)</label>
+      <input type="file" name="foto" class="form-control" accept="image/*">
+    </div>
+    <div class="col-md-2">
+      <button type="submit" class="btn btn-primary w-100">Gerar PDF</button>
+    </div>
+  </div>
+</form>
+
+{% if pdf_url %}
+  <div class="alert alert-success d-flex justify-content-between align-items-center">
+    <div>PDF gerado com sucesso.</div>
+    <div>
+      <a class="btn btn-success" href="{{ pdf_url }}" target="_blank">📄 Abrir PDF</a>
+    </div>
+  </div>
+{% endif %}
+
+{% endblock %}

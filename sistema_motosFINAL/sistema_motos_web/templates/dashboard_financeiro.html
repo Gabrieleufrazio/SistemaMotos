@@ -1,0 +1,30 @@
+{% extends "layout_base.html" %}
+{% block titulo %}Dashboard Financeiro{% endblock %}
+{% block content %}
+
+<h4 class="mb-4">📊 Dashboard Financeiro Mensal</h4>
+
+{% if resumo %}
+<table class="table table-bordered table-striped">
+  <thead class="table-dark">
+    <tr>
+      <th>Mês</th>
+      <th>Total de Despesas</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for mes, valor in resumo.items() %}
+    <tr>
+      <td>{{ mes }}</td>
+      <td>{{ valor | br_moeda }}</td>  <!-- Formata o valor corretamente -->
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+  <div class="alert alert-info">Nenhum dado financeiro disponível para o período.</div>
+{% endif %}
+
+<a href="/menu" class="btn btn-secondary mt-4">↩️ Voltar ao Menu</a>
+
+{% endblock %}

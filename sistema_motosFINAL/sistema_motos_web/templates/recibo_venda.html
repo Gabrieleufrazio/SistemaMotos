@@ -1,0 +1,35 @@
+{% extends "layout_base.html" %}
+{% block titulo %}Recibo de Venda{% endblock %}
+{% block content %}
+<h4>🧾 Recibo de Compra e Venda de Moto</h4>
+
+{% if dados %}
+  <div class="card p-4 mt-3">
+    <p><strong>Moto:</strong> {{ dados[1] }} {{ dados[2] }} ({{ dados[3] }})</p>
+    <p><strong>Cor:</strong> {{ dados[4] }}</p>
+    <p><strong>Placa:</strong> {{ dados[5] }}</p>
+    <p><strong>KM:</strong> {{ dados[7] }}</p>
+    <p><strong>ID da Moto:</strong> {{ dados[0] }}{% if dados|length > 11 %} (Venda #{{ dados[11] }}){% endif %}</p>
+    <p><strong>Preço Final:</strong> {{ (dados[10] if (dados|length>10 and dados[10] is not none) else dados[6])|br_moeda }}</p>
+    <p><strong>Vendedor:</strong> {{ dados[8] }}</p>
+    <p><strong>Data da Venda:</strong> {{ dados[9] }}</p>
+    <hr>
+    <p>Declaro para os devidos fins que a motocicleta descrita acima foi negociada entre as partes.</p>
+    <br>
+    <div class="row text-center mt-4">
+      <div class="col">
+        __________________________<br>
+        Assinatura do Vendedor
+      </div>
+    </div>
+    <br>
+    <a href="/download_recibo/{{ dados[0] }}" class="btn btn-primary mt-4">📥 Baixar PDF do Recibo</a>
+    {% if pdf_garantia_url %}
+      <a href="{{ pdf_garantia_url }}" target="_blank" class="btn btn-success mt-2">📄 Ver Garantia</a>
+    {% endif %}
+    <button type="button" onclick="history.back()" class="btn btn-secondary mt-2">↩️ Voltar</button>
+  </div>
+{% else %}
+  <div class="alert alert-danger">Recibo não encontrado.</div>
+{% endif %}
+{% endblock %}

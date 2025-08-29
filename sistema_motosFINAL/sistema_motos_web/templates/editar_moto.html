@@ -1,0 +1,216 @@
+{% extends "layout_base.html" %}
+{% block titulo %}Editar Moto{% endblock %}
+{% block content %}
+<h4>✏️ Editar Moto</h4>
+
+<form method="post" enctype="multipart/form-data">
+  <div class="row">
+    <div class="col-md-3 mb-3">
+      <label>Marca</label>
+      <input type="text" name="marca" value="{{ moto[1] }}" class="form-control" required>
+    </div>
+    <div class="col-md-3 mb-3">
+      <label>Modelo</label>
+      <input type="text" name="modelo" value="{{ moto[2] }}" class="form-control" required>
+    </div>
+    <div class="col-md-2 mb-3">
+      <label>Ano</label>
+      <input type="number" name="ano" value="{{ moto[3] }}" class="form-control" required>
+    </div>
+    <div class="col-md-2 mb-3">
+      <label>Cor</label>
+      <input type="text" name="cor" value="{{ moto[4] }}" class="form-control" required>
+    </div>
+    <div class="col-md-2 mb-3">
+      <label>Quilometragem (KM)</label>
+      <input type="text" name="km" id="km" value="{{ moto[5] }}" placeholder="Ex: 10.500" class="form-control" required>
+    </div>
+    <div class="col-md-2 mb-3">
+      <label>Preço (R$)</label>
+      <input type="text" name="preco" id="preco" value="{{ moto[6] }}" placeholder="Ex: R$ 12.990,50" class="form-control" required>
+    </div>
+    <div class="col-md-3 mb-3">
+      <label>Placa</label>
+      <input type="text" name="placa" value="{{ moto[7] }}" class="form-control" required>
+    </div>
+    <div class="col-md-3 mb-3">
+      <label>Combustível</label>
+      <select name="combustivel" class="form-control" required>
+        {% for tipo in ["Gasolina", "Álcool", "Flex", "Elétrico"] %}
+          <option value="{{ tipo }}" {% if moto[8] == tipo %}selected{% endif %}>{{ tipo }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-3 mb-3">
+      <label>Status</label>
+      <select name="status" class="form-control" required>
+        {% for s in ["disponível", "vendida"] %}
+          <option value="{{ s }}" {% if moto[9]|lower == s %}selected{% endif %}>{{ s|capitalize }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="col-md-3 mb-3">
+      <label>Renavam</label>
+      <input type="text" name="renavam" value="{{ moto[10] }}" class="form-control">
+    </div>
+    <div class="col-md-3 mb-3">
+      <label>Chassi</label>
+      <input type="text" name="chassi" value="{{ moto[11] }}" class="form-control">
+    </div>
+
+    <div class="col-md-3 mb-3">
+      <label>Data Cadastro</label>
+      <input type="date" name="data_cadastro" value="{{ moto[15] }}" class="form-control">
+    </div>
+    <div class="col-md-3 mb-3">
+      <label>Hora Cadastro</label>
+      <input type="time" name="hora_cadastro" value="{{ moto[16] }}" class="form-control">
+    </div>
+
+    <div class="col-md-3 mb-3">
+      <label>Nome Cliente</label>
+      <input type="text" name="nome_cliente" value="{{ moto[17] }}" class="form-control">
+    </div>
+    <div class="col-md-3 mb-3">
+      <label>CPF Cliente</label>
+      <input type="text" name="cpf_cliente" value="{{ moto[18] }}" class="form-control">
+    </div>
+    <div class="col-md-3 mb-3">
+      <label>Rua/Endereço</label>
+      <input type="text" name="rua_cliente" value="{{ moto[19] }}" class="form-control">
+    </div>
+    <div class="col-md-3 mb-3">
+      <label>CEP Cliente</label>
+      <input type="text" name="cep_cliente" value="{{ moto[20] }}" class="form-control">
+    </div>
+    <div class="col-md-3 mb-3">
+      <label>Celular Cliente</label>
+      <input type="text" name="celular_cliente" value="{{ moto[21] }}" class="form-control">
+    </div>
+    <div class="col-md-3 mb-3">
+      <label>Referência</label>
+      <input type="text" name="referencia" value="{{ moto[22] }}" class="form-control">
+    </div>
+    <div class="col-md-3 mb-3">
+      <label>Celular Referência</label>
+      <input type="text" name="celular_referencia" value="{{ moto[23] }}" class="form-control">
+    </div>
+    <div class="col-md-3 mb-3">
+      <label>Débitos</label>
+      <input type="text" name="debitos" value="{{ moto[24] }}" class="form-control">
+    </div>
+    <div class="col-md-12 mb-3">
+      <label>Observações</label>
+      <textarea name="observacoes" class="form-control" rows="3">{{ moto[25] }}</textarea>
+    </div>
+
+    <div class="col-md-4 mb-3">
+      <label>Documento da Moto</label>
+      <div class="d-flex align-items-center gap-2">
+        {% set doc_url = file_url(moto[12]) %}
+        {% if doc_url %}
+          <a href="{{ doc_url }}" target="_blank" class="btn btn-sm btn-outline-info">Ver atual</a>
+        {% endif %}
+        <input type="file" name="doc_moto" class="form-control">
+      </div>
+    </div>
+    <div class="col-md-4 mb-3">
+      <label>Laudo</label>
+      <div class="d-flex align-items-center gap-2">
+        {% set laudo_url = file_url(moto[13]) %}
+        {% if laudo_url %}
+          <a href="{{ laudo_url }}" target="_blank" class="btn btn-sm btn-outline-info">Ver atual</a>
+        {% endif %}
+        <input type="file" name="laudo" class="form-control">
+      </div>
+    </div>
+    <div class="col-md-4 mb-3">
+      <label>Comprovante de Residência</label>
+      <div class="d-flex align-items-center gap-2">
+        {% set resid_url = file_url(moto[14]) %}
+        {% if resid_url %}
+          <a href="{{ resid_url }}" target="_blank" class="btn btn-sm btn-outline-info">Ver atual</a>
+        {% endif %}
+        <input type="file" name="comprovante_residencia" class="form-control">
+      </div>
+    </div>
+  </div>
+  <button type="submit" class="btn btn-success">💾 Salvar Alterações</button>
+  <a href="/listar_motos" class="btn btn-secondary ms-2">↩️ Voltar</a>
+</form>
+
+<script>
+// Helpers de normalização e formatação
+function parseNumeroBR(valor) {
+  if (valor == null) return null;
+  valor = String(valor).trim();
+  if (valor === '') return null;
+  // Aceita "1.234,56", "1234,56", "1234.56" ou "123456"
+  // Primeiro, remove espaços e símbolo de moeda
+  valor = valor.replace(/R\$\s?/g, '');
+  // Se tiver vírgula, considere como separador decimal BR
+  if (valor.includes(',')) {
+    valor = valor.replace(/\./g, '').replace(',', '.');
+  }
+  // Agora deve estar no padrão com ponto decimal
+  const n = Number(valor);
+  return isNaN(n) ? null : n;
+}
+
+function formatarKMDeNumero(n) {
+  if (n == null || isNaN(n)) return '';
+  // KM sem casas decimais, milhares com ponto
+  return Math.floor(n).toLocaleString('pt-BR');
+}
+
+function formatarPrecoDeNumero(n) {
+  if (n == null || isNaN(n)) return '';
+  return 'R$ ' + Number(n).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+// Formatação durante digitação (comportamento igual ao cadastro)
+function formatarKMInput(valor) {
+  return valor.replace(/\D/g, '').replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.');
+}
+
+function formatarPrecoInput(valor) {
+  valor = valor.replace(/\D/g, '');
+  valor = (valor / 100).toFixed(2) + '';
+  valor = valor.replace('.', ',');
+  valor = valor.replace(/(\d)(\d{3})(\d{3}),/g, '$1.$2.$3,');
+  valor = valor.replace(/(\d)(\d{3}),/g, '$1.$2,');
+  return 'R$ ' + valor;
+}
+
+// Aplicar formatação inicial ao carregar a página
+document.addEventListener('DOMContentLoaded', function() {
+  const kmEl = document.getElementById('km');
+  const precoEl = document.getElementById('preco');
+  if (kmEl && kmEl.value) {
+    const n = parseNumeroBR(kmEl.value);
+    kmEl.value = formatarKMDeNumero(n);
+  }
+  if (precoEl && precoEl.value) {
+    const n = parseNumeroBR(precoEl.value);
+    precoEl.value = formatarPrecoDeNumero(n);
+  }
+
+  // Eventos de digitação
+  kmEl.addEventListener('input', function(e) {
+    e.target.value = formatarKMInput(e.target.value);
+  });
+  precoEl.addEventListener('input', function(e) {
+    e.target.value = formatarPrecoInput(e.target.value);
+  });
+
+  // Limpeza antes de enviar (igual cadastro)
+  document.querySelector('form').addEventListener('submit', function() {
+    // KM: apenas dígitos
+    kmEl.value = kmEl.value.replace(/\./g, '');
+    // Preço: remove R$ e pontos, mantém vírgula
+    precoEl.value = precoEl.value.replace(/R\$\s?/, '').replace(/\./g, '');
+  });
+});
+</script>
+{% endblock %}

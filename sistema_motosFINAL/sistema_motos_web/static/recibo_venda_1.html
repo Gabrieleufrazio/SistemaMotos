@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recibo de Venda - 1</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .recibo {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #333;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #333;
+            margin: 0;
+        }
+        .section {
+            margin-bottom: 25px;
+        }
+        .section h2 {
+            color: #555;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .label {
+            font-weight: bold;
+            color: #333;
+        }
+        .value {
+            color: #666;
+        }
+        .preco {
+            font-size: 24px;
+            font-weight: bold;
+            color: #28a745;
+            text-align: center;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            color: #888;
+            font-size: 12px;
+        }
+        @media print {
+            body {
+                background-color: white;
+            }
+            .recibo {
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="recibo">
+        <div class="header">
+            <h1>🏍️ RECIBO DE VENDA</h1>
+            <p>Sistema Motos Web</p>
+        </div>
+        
+        <div class="section">
+            <h2>📋 Informações da Venda</h2>
+            <div class="info-row">
+                <span class="label">ID da Venda:</span>
+                <span class="value">1</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Data:</span>
+                <span class="value">2025-08-16</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Vendedor:</span>
+                <span class="value">admin</span>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>🏍️ Motocicleta</h2>
+            <div class="info-row">
+                <span class="label">Marca:</span>
+                <span class="value">HONDA</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Modelo:</span>
+                <span class="value">FAN</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Ano:</span>
+                <span class="value">2025</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Cor:</span>
+                <span class="value">BRANCO</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Quilometragem:</span>
+                <span class="value">0 km</span>
+            </div>
+        </div>
+        
+        <div class="preco">
+            💰 VALOR TOTAL: R$ 25.000,00
+        </div>
+        
+        <div class="footer">
+            <p>Recibo gerado automaticamente em 2025-08-16</p>
+            <p>Sistema Motos Web - Gestão de Vendas</p>
+        </div>
+    </div>
+    
+    <script>
+        window.onload = function() {
+            setTimeout(function() {
+                window.print();
+            }, 500);
+        };
+    </script>
+</body>
+</html>

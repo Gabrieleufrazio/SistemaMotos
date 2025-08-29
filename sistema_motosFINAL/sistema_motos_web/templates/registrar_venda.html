@@ -1,0 +1,200 @@
+{% extends "layout_base.html" %}
+{% block titulo %}Registrar Venda{% endblock %}
+
+{% block extra_js %}
+<script>
+  function abrirImprimir(url) {
+    try {
+      const w = window.open(url, '_blank');
+      if (!w) return; // popup blocked
+      // aguarda o carregamento e tenta acionar print; pode variar por tipo (PDF/Imagem)
+      const tentarPrint = () => {
+        try { w.focus(); w.print(); } catch (e) {}
+      };
+      // tentativa após 800ms
+      setTimeout(tentarPrint, 800);
+    } catch (e) {
+      console.log('Falha ao abrir/imprimir:', e);
+    }
+  }
+
+  // Abre e imprime todos os documentos disponíveis em sequência
+  function imprimirTodos() {
+    const spans = document.querySelectorAll('#all-print-urls [data-url]');
+    const urls = Array.from(spans).map(s => s.getAttribute('data-url'));
+    if (!urls.length) return;
+    let i = 0;
+    const abrirProximo = () => {
+      const url = urls[i];
+      const w = window.open(url, '_blank');
+      // Pequeno atraso para carregar o documento antes de imprimir
+      setTimeout(() => {
+        try { if (w) { w.focus(); w.print(); } } catch (e) {}
+        i++;
+        if (i < urls.length) {
+          // Espaçar as impressões para reduzir bloqueio de popups
+          setTimeout(abrirProximo, 900);
+        }
+      }, 800);
+    };
+    abrirProximo();
+  }
+</script>
+{% endblock %}
+{% block content %}
+<h4>💼 Registrar Venda</h4>
+
+{% if sucesso == True %}
+  <div class="alert alert-success">
+    <strong>✅ Venda registrada com sucesso!</strong>
+    <br><br>
+    <a href="/recibo_venda/{{ moto_id }}" class="btn btn-primary btn-sm">🧾 Ver Recibo da Venda</a>
+    <a href="/download_recibo_venda/{{ venda_id }}" class="btn btn-secondary btn-sm ms-2">📥 Baixar PDF do Recibo</a>
+    {% if pdf_garantia_url %}
+      <a href="{{ pdf_garantia_url }}" class="btn btn-success btn-sm ms-2" target="_blank">📋 Baixar Garantia</a>
+    {% endif %}
+    {% if pdf_procuracao_url %}
+      <a href="{{ pdf_procuracao_url }}" class="btn btn-warning btn-sm ms-2" target="_blank">📝 Baixar Procuração</a>
+    {% endif %}
+    {% if cnh_url or garantia_anexada_url or endereco_url or pdf_garantia_url or pdf_procuracao_url %}
+      <button type="button" class="btn btn-outline-dark btn-sm ms-2" onclick="imprimirTodos()">🖨️ Imprimir todos</button>
+      <div id="all-print-urls" class="d-none">
+        {% for u in [cnh_url, garantia_anexada_url, endereco_url, pdf_garantia_url, pdf_procuracao_url] if u %}
+          <span data-url="{{ u }}"></span>
+        {% endfor %}
+      </div>
+    {% endif %}
+    {% if cnh_url or garantia_anexada_url or endereco_url %}
+    <hr>
+    <div class="mt-2">
+      <strong>📎 Anexos enviados:</strong>
+      {% if cnh_url %}
+        <div class="mt-2 d-inline-block me-2">
+          <a href="{{ cnh_url }}" target="_blank" class="btn btn-outline-info btn-sm">👁️ Visualizar CNH</a>
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick="abrirImprimir('{{ cnh_url }}')">🖨️ Imprimir CNH</button>
+        </div>
+      {% endif %}
+      {% if garantia_anexada_url %}
+        <div class="mt-2 d-inline-block me-2">
+          <a href="{{ garantia_anexada_url }}" target="_blank" class="btn btn-outline-info btn-sm">👁️ Visualizar Garantia</a>
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick="abrirImprimir('{{ garantia_anexada_url }}')">🖨️ Imprimir Garantia</button>
+        </div>
+      {% endif %}
+      {% if endereco_url %}
+        <div class="mt-2 d-inline-block me-2">
+          <a href="{{ endereco_url }}" target="_blank" class="btn btn-outline-info btn-sm">👁️ Visualizar Comprovante</a>
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick="abrirImprimir('{{ endereco_url }}')">🖨️ Imprimir Comprovante</button>
+        </div>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+{% elif sucesso == False %}
+  <div class="alert alert-danger">Erro ao registrar venda. Verifique se a moto está disponível.</div>
+{% endif %}
+
+<form method="get" class="row g-2 mb-4 bg-light p-3 rounded">
+  <div class="col-md-4">
+    <input type="text" name="marca_modelo" value="{{ filtros.marca_modelo }}" class="form-control" placeholder="🔤 Marca ou Modelo">
+  </div>
+  <div class="col-md-3">
+    <input type="text" name="renavam" value="{{ filtros.renavam }}" class="form-control" placeholder="📝 Renavam">
+  </div>
+  <div class="col-md-2">
+    <button type="submit" class="btn btn-primary w-100">🔎 Buscar Moto</button>
+  </div>
+</form>
+
+{% if motos %}
+<form method="post" enctype="multipart/form-data">
+  <h5>Selecione a Moto:</h5>
+  <table class="table table-bordered table-striped table-hover">
+    <thead class="table-dark">
+      <tr>
+        <th>Selecionar</th>
+        <th>Marca/Modelo</th>
+        <th>Ano</th>
+        <th>Placa</th>
+        {% if session.tipo == 'admin' %}
+        <th>Preço</th>
+        {% else %}
+        <th>Renavam</th>
+        {% endif %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for m in motos %}
+      <tr>
+        <td><input type="radio" name="moto_id" value="{{ m[0] }}" required></td>
+        <td>{{ m[1] }} {{ m[2] }}</td>
+        <td>{{ m[3] }}</td>
+        <td>{{ m[7] }}</td>
+        <td>
+          {% if session.tipo == 'admin' %}
+            {{ m[6]|br_moeda }}
+          {% else %}
+            {{ m[10] }}
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="row mt-4">
+    <div class="col-md-4 mb-3">
+      <label>Data da Venda</label>
+      <input type="date" name="data" class="form-control" required>
+    </div>
+    <div class="col-md-4 mb-3">
+      <label>Preço Final</label>
+      <input type="text" name="preco_final" class="form-control currency" placeholder="R$ 0,00">
+    </div>
+    <div class="col-md-4"></div>
+  </div>
+
+  <h5>Dados do Comprador</h5>
+  <div class="row">
+    <div class="col-md-6 mb-3">
+      <label>Nome</label>
+      <input type="text" name="nome_cliente" class="form-control" placeholder="Nome do comprador">
+    </div>
+    <div class="col-md-6 mb-3">
+      <label>CPF</label>
+      <input type="text" name="cpf_cliente" class="form-control" placeholder="CPF do comprador">
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-8 mb-3">
+      <label>Rua</label>
+      <input type="text" name="rua_cliente" class="form-control" placeholder="Rua / Endereço do comprador">
+    </div>
+    <div class="col-md-4 mb-3">
+      <label>CEP</label>
+      <input type="text" name="cep_cliente" class="form-control" placeholder="CEP">
+    </div>
+  </div>
+
+  <h5>Anexos da Venda (opcionais)</h5>
+  <div class="row">
+    <div class="col-md-4 mb-3">
+      <label>CNH (imagem/PDF)</label>
+      <input type="file" name="cnh_file" class="form-control" accept="image/*,.pdf">
+    </div>
+    <div class="col-md-4 mb-3">
+      <label>Garantia Assinada (imagem/PDF)</label>
+      <input type="file" name="garantia_file" class="form-control" accept="image/*,.pdf">
+    </div>
+    <div class="col-md-4 mb-3">
+      <label>Comprovante de Endereço (imagem/PDF)</label>
+      <input type="file" name="endereco_file" class="form-control" accept="image/*,.pdf">
+    </div>
+  </div>
+
+  <button type="submit" class="btn btn-primary">💾 Registrar Venda</button>
+  <a href="/menu" class="btn btn-secondary ms-2">↩️ Voltar</a>
+</form>
+{% elif filtros %}
+  <div class="alert alert-info">Nenhuma moto disponível encontrada com os filtros aplicados.</div>
+{% endif %}
+{% endblock %}

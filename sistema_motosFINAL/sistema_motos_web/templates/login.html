@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Login</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-image: url('/static/1000_Giros _LOGO.png');
+      background-size: contain;
+      background-position: center center;
+      background-repeat: no-repeat;
+      background-color: #0f1115; /* fallback */
+      min-height: 100vh;
+    }
+    /* overlay sutil para contraste (mais claro) */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(ellipse at center, rgba(0,0,0,0.15), rgba(0,0,0,0.35));
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="overlay"></div>
+  <div class="bg-light bg-opacity-90 p-4 rounded text-dark shadow" style="width: 420px; margin: auto; margin-top: 8%; backdrop-filter: saturate(120%) blur(2px);">
+    <h3 class="text-center">🔐 Login</h3>
+    {% if erro %}
+      <div class="alert alert-danger">Usuário ou senha inválidos!</div>
+    {% endif %}
+    <form method="post">
+      <div class="mb-3">
+        <label class="form-label">Usuário</label>
+        <input type="text" name="usuario" class="form-control" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Senha</label>
+        <input type="password" name="senha" class="form-control" required>
+      </div>
+      <button type="submit" class="btn btn-primary w-100">Entrar</button>
+    </form>
+  </div>
+</body>
+</html>

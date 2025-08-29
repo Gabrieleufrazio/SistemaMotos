@@ -1,0 +1,76 @@
+{% extends "layout_base.html" %}
+{% block titulo %}Relatório do Estoque{% endblock %}
+{% block content %}
+<h4>📊 Relatório de Estoque de Motos</h4>
+
+<h5 class="mt-4">🛵 Motos Cadastradas</h5>
+{% if estoque %}
+<table class="table table-bordered table-striped">
+  <thead class="table-dark">
+    <tr>
+      <th>ID</th>
+      <th>Marca</th>
+      <th>Modelo</th>
+      <th>Ano</th>
+      <th>Cor</th>
+      <th>KM</th>
+      {% if session.tipo == 'admin' %}<th>Preço</th>{% endif %}
+      <th>Placa</th>
+      <th>Combustível</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for moto in estoque %}
+    <tr>
+      <td>{{ moto[0] }}</td>
+      <td>{{ moto[1] }}</td>
+      <td>{{ moto[2] }}</td>
+      <td>{{ moto[3] }}</td>
+      <td>{{ moto[4] }}</td>
+      <td>{{ moto[5] | br_km }}</td>
+      {% if session.tipo == 'admin' %}
+      <td>{{ moto[6] | br_moeda }}</td>
+      {% endif %}
+      <td>{{ moto[7] }}</td>
+      <td>{{ moto[8] }}</td>
+      <td>{{ moto[9] }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+  <div class="alert alert-info">Nenhuma moto cadastrada.</div>
+{% endif %}
+
+<h5 class="mt-5">💼 Vendas por Vendedor</h5>
+{% if vendas %}
+<table class="table table-sm table-bordered">
+  <thead class="table-light">
+    <tr>
+      <th>Vendedor</th>
+      <th>Quantidade de Vendas</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for v in vendas %}
+    <tr>
+      <td>{{ v[0] }}</td>
+      <td>{{ v[1] }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+  <div class="alert alert-secondary">Nenhuma venda registrada ainda.</div>
+{% endif %}
+
+<h5 class="mt-5">📋 Resumo Geral</h5>
+<ul class="list-group">
+  <li class="list-group-item">Total Disponível: {{ resumo.total_disponivel }}</li>
+  <li class="list-group-item">Total Vendida: {{ resumo.total_vendida }}</li>
+  <li class="list-group-item">Total Geral: {{ resumo.total_geral }}</li>
+</ul>
+
+<a href="/menu" class="btn btn-secondary mt-4">↩️ Voltar ao Menu</a>
+{% endblock %}

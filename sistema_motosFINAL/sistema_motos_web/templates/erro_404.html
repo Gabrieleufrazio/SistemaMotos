@@ -1,0 +1,12 @@
+{% extends "layout_base.html" %}
+{% block titulo %}Página Não Encontrada{% endblock %}
+{% block content %}
+  <div class="container text-center mt-5">
+    <h1 class="display-1">404</h1>
+    <h2>Página Não Encontrada</h2>
+    <p class="lead">Desculpe, a página que você está tentando acessar não existe ou foi movida.</p>
+    <hr>
+    <p><b>URL solicitada:</b> {{ request.url }}</p>
+    <a href="/menu" class="btn btn-primary mt-3">Voltar ao Menu Principal</a>
+  </div>
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends "layout_base.html" %}
+{% block titulo %}Folha de Exibição{% endblock %}
+{% block content %}
+<div class="container mt-4" style="max-width: 980px;">
+  <div class="d-flex justify-content-between align-items-center">
+    <h3>📄 Folha de Exibição</h3>
+    {% if session.tipo == 'admin' %}
+      <a href="/folha_exibicao_upload" class="btn btn-outline-primary">Atualizar arquivo</a>
+    {% endif %}
+  </div>
+  <hr>
+  {% if imagem_url %}
+    {% if uploader or uploaded_at %}
+      <p class="text-muted">Última versão{% if uploaded_at %} em <strong>{{ uploaded_at }}</strong>{% endif %}{% if uploader %} por <strong>{{ uploader }}</strong>{% endif %}.</p>
+    {% endif %}
+    {% if is_pdf %}
+      <div class="mb-2 text-end">
+        <a class="btn btn-sm btn-outline-secondary" href="{{ imagem_url }}" target="_blank" rel="noopener">Abrir em nova aba</a>
+      </div>
+      <div class="ratio ratio-16x9" style="min-height:45vh;">
+        <iframe src="{{ imagem_url }}" title="Folha de Exibição" frameborder="0"></iframe>
+      </div>
+    {% else %}
+      <div class="text-center">
+        <img src="{{ imagem_url }}" alt="Folha de Exibição" class="img-fluid" style="max-height: 50vh;">
+      </div>
+    {% endif %}
+  {% else %}
+    <div class="alert alert-info">Nenhuma imagem enviada ainda.</div>
+  {% endif %}
+
+  {% if historico and historico|length > 0 %}
+    <hr>
+    <h5>Histórico de versões</h5>
+    <div class="table-responsive">
+      <table class="table table-sm align-middle">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Arquivo</th>
+            <th>Tipo</th>
+            <th>Enviado por</th>
+            <th>Data</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for h in historico %}
+          <tr>
+            <td>{{ h[0] }}</td>
+            <td class="text-truncate" style="max-width:300px;">{{ h[1] }}</td>
+            <td>{{ h[2] }}</td>
+            <td>{{ h[3] }}</td>
+            <td>{{ h[4] }}</td>
+            <td class="text-end">
+              <a class="btn btn-sm btn-outline-secondary" href="/folha_exibicao_ver/{{ h[0] }}">Abrir</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

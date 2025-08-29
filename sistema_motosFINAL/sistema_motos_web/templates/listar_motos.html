@@ -1,0 +1,254 @@
+{% extends "layout_base.html" %}
+{% block titulo %}Lista de Motos{% endblock %}
+{% block content %}
+<h4>📃 Motos Cadastradas</h4>
+
+<form method="get" class="row g-2 mb-4">
+  <div class="col-md-3">
+    <input type="text" name="marca_modelo" value="{{ filtros.marca_modelo }}" class="form-control" placeholder="🔤 Marca ou Modelo">
+  </div>
+  <div class="col-md-2">
+    <input type="text" name="placa" value="{{ filtros.placa }}" class="form-control" placeholder="📍 Placa">
+  </div>
+  <div class="col-md-2">
+    <input type="text" name="renavam" value="{{ filtros.renavam }}" class="form-control" placeholder="📝 Renavam">
+  </div>
+  <div class="col-md-2">
+    <select name="combustivel" class="form-control">
+      <option value="">⛽ Combustível</option>
+      {% for c in ["Gasolina", "Etanol", "Flex", "Elétrico"] %}
+        <option value="{{ c }}" {% if filtros.combustivel == c %}selected{% endif %}>{{ c }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-2">
+    <input type="number" name="ano_min" value="{{ filtros.ano_min }}" class="form-control" placeholder="📆 Ano mín">
+  </div>
+  <div class="col-md-2">
+    <input type="number" name="ano_max" value="{{ filtros.ano_max }}" class="form-control" placeholder="📆 Ano máx">
+  </div>
+  <div class="col-md-2">
+    <input type="number" step="0.01" name="km_min" value="{{ filtros.km_min }}" class="form-control" placeholder="🛣️ Km mín">
+  </div>
+  <div class="col-md-2">
+    <input type="number" step="0.01" name="km_max" value="{{ filtros.km_max }}" class="form-control" placeholder="🛣️ Km máx">
+  </div>
+  <div class="col-md-2">
+    {% if session.tipo == 'admin' %}
+    <input type="number" step="0.01" name="preco_min" value="{{ filtros.preco_min }}" class="form-control" placeholder="💰 Preço mín">
+    {% endif %}
+  </div>
+  <div class="col-md-2">
+    {% if session.tipo == 'admin' %}
+    <input type="number" step="0.01" name="preco_max" value="{{ filtros.preco_max }}" class="form-control" placeholder="💰 Preço máx">
+    {% endif %}
+  </div>
+  <div class="col-md-2">
+    <select name="status" class="form-control">
+      <option value="">📊 Status</option>
+      {% for s in ["disponível", "vendida"] %}
+        <option value="{{ s }}" {% if filtros.status == s %}selected{% endif %}>{{ s|capitalize }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-2">
+    <button type="submit" class="btn btn-primary w-100">🔎 Filtrar</button>
+  </div>
+</form>
+
+{% if motos %}
+<table class="table table-bordered table-striped">
+  <thead class="table-dark">
+    <tr>
+      <th>ID</th><th>Marca</th><th>Modelo</th><th>Ano</th><th>Cor</th>
+      <th>Km</th>
+      {% if session.tipo == 'admin' %}
+        <th>Preço cadastrado</th><th>Vendido por</th><th>Lucro</th>
+      {% else %}
+        <th>Preço</th>
+      {% endif %}
+      <th>Placa</th><th>Combustível</th><th>Status</th><th>Foto</th><th>Documentos</th><th>Ações</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for m in motos %}
+    <tr>
+      <td>{{ m[0] }}</td><td>{{ m[1] }}</td><td>{{ m[2] }}</td><td>{{ m[3] }}</td><td>{{ m[4] }}</td>
+      <td>{{ m[5]|br_km }}</td>
+      {% if session.tipo == 'admin' %}
+        <td>{{ m[6]|br_moeda }}</td>
+        <td>
+          {% set pv = sale_prices.get(m[0]) if sale_prices else None %}
+          {% if pv is not none %}
+            {{ pv|br_moeda }}
+          {% else %}
+            —
+          {% endif %}
+        </td>
+        <td>
+          {% if pv is not none %}
+            {% set lucro = pv - (m[6]|float) %}
+            {{ lucro|br_moeda }}
+          {% else %}
+            —
+          {% endif %}
+        </td>
+      {% else %}
+        <td>—</td>
+      {% endif %}
+      <td>{{ m[7] }}</td>
+      <td>{{ m[8] }}</td>
+      <td>
+        {% if m[9] == 'vendida' %}
+          <span style="color: red; font-weight: bold;">{{ m[9]|capitalize }}</span>
+        {% elif m[9] == 'disponível' %}
+          <span style="color: green; font-weight: bold;">{{ m[9]|capitalize }}</span>
+        {% else %}
+          <span>{{ m[9]|capitalize }}</span>
+        {% endif %}
+      </td>
+      <td>
+        {% if foto_urls and (m[0] in foto_urls) %}
+          <a href="{{ foto_urls[m[0]] }}" target="_blank" title="Foto da Moto">
+            <img src="{{ foto_urls[m[0]] }}" alt="Foto da Moto" class="img-thumbnail me-1" style="height:48px; width:auto;">
+          </a>
+        {% else %}
+          —
+        {% endif %}
+      </td>
+      <td>
+        {% set doc_url = file_url(m[12]) %}
+        {% if doc_url %}
+          {% if m[12]|is_image %}
+            <a href="{{ doc_url }}" target="_blank" title="Documento da Moto">
+              <img src="{{ doc_url }}" alt="Documento" class="img-thumbnail me-1" style="height:48px; width:auto;">
+            </a>
+          {% else %}
+            <a href="{{ doc_url }}" target="_blank" class="btn btn-sm btn-outline-info">Doc</a>
+          {% endif %}
+        {% endif %}
+        {% set laudo_url = file_url(m[13]) %}
+        {% if laudo_url %}
+          {% if m[13]|is_image %}
+            <a href="{{ laudo_url }}" target="_blank" title="Laudo">
+              <img src="{{ laudo_url }}" alt="Laudo" class="img-thumbnail me-1" style="height:48px; width:auto;">
+            </a>
+          {% else %}
+            <a href="{{ laudo_url }}" target="_blank" class="btn btn-sm btn-outline-info">Laudo</a>
+          {% endif %}
+        {% endif %}
+        {% set resid_url = file_url(m[14]) %}
+        {% if resid_url %}
+          {% if m[14]|is_image %}
+            <a href="{{ resid_url }}" target="_blank" title="Comprovante de Residência">
+              <img src="{{ resid_url }}" alt="Residência" class="img-thumbnail me-1" style="height:48px; width:auto;">
+            </a>
+          {% else %}
+            <a href="{{ resid_url }}" target="_blank" class="btn btn-sm btn-outline-info">Resid.</a>
+          {% endif %}
+        {% endif %}
+        {% if procuracao_urls and procuracao_urls.get(m[0]) %}
+          <a href="{{ procuracao_urls.get(m[0]) }}" target="_blank" class="btn btn-sm btn-outline-secondary">Procuração</a>
+        {% endif %}
+      </td>
+      <td>
+        <a href="/editar_moto/{{ m[0] }}" class="btn btn-sm btn-warning">✏️ Editar</a>
+        <a href="/excluir_moto/{{ m[0] }}" class="btn btn-sm btn-danger" onclick="return confirm('Confirma exclusão?')">🗑️ Excluir</a>
+        <div class="mt-1"></div>
+        <!-- Botões de impressão -->
+        <button type="button" class="btn btn-sm btn-outline-primary btn-print-docs" data-moto-id="{{ m[0] }}">🖨️ Docs</button>
+        <button type="button" class="btn btn-sm btn-outline-success btn-print-foto" data-moto-id="{{ m[0] }}">🖨️ Moto</button>
+        <button type="button" class="btn btn-sm btn-outline-dark btn-print-todos" data-moto-id="{{ m[0] }}">🖨️ Todos</button>
+        <!-- Container oculto com URLs para impressão desta moto -->
+        <div id="print-urls-{{ m[0] }}" class="d-none">
+          {% if foto_urls and (m[0] in foto_urls) %}
+            <span data-url-foto="{{ foto_urls[m[0]] }}"></span>
+          {% endif %}
+          {% if doc_url %}
+            <span data-url-doc="{{ doc_url }}"></span>
+          {% endif %}
+          {% if laudo_url %}
+            <span data-url-laudo="{{ laudo_url }}"></span>
+          {% endif %}
+          {% if resid_url %}
+            <span data-url-resid="{{ resid_url }}"></span>
+          {% endif %}
+          {% if procuracao_urls and procuracao_urls.get(m[0]) %}
+            <span data-url-procuracao="{{ procuracao_urls.get(m[0]) }}"></span>
+          {% endif %}
+        </div>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+  <div class="alert alert-info">Nenhuma moto encontrada com os filtros aplicados.</div>
+{% endif %}
+
+<a href="/cadastro_moto" class="btn btn-success mt-3">➕ Cadastrar Nova Moto</a>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('click', function(e){
+    const btn = e.target.closest('.btn-print-docs, .btn-print-foto, .btn-print-todos');
+    if (!btn) return;
+    const id = btn.getAttribute('data-moto-id');
+    if (!id) return;
+    if (btn.classList.contains('btn-print-docs')) return imprimirDocs(id);
+    if (btn.classList.contains('btn-print-foto')) return imprimirFoto(id);
+    if (btn.classList.contains('btn-print-todos')) return imprimirTudo(id);
+  });
+  function abrirImprimirUrl(url, cb){
+    try {
+      const w = window.open(url, '_blank');
+      setTimeout(() => {
+        try { if (w) { w.focus(); w.print(); } } catch(e) {}
+        if (typeof cb === 'function') setTimeout(cb, 700);
+      }, 800);
+    } catch(e) {
+      if (typeof cb === 'function') cb();
+    }
+  }
+
+  function coletarUrls(motoId){
+    const cont = document.querySelector('#print-urls-' + motoId);
+    if (!cont) return {foto:null, docs:[]};
+    const fotoEl = cont.querySelector('[data-url-foto]');
+    const urls = [];
+    ['data-url-doc','data-url-laudo','data-url-resid','data-url-procuracao']
+      .forEach(attr => cont.querySelectorAll('['+attr+']').forEach(el => urls.push(el.getAttribute(attr))));
+    return { foto: fotoEl ? fotoEl.getAttribute('data-url-foto') : null, docs: urls };
+  }
+
+  function imprimirDocs(motoId){
+    const {docs} = coletarUrls(motoId);
+    if (!docs.length) return;
+    let i = 0;
+    const prox = () => { if (i < docs.length) abrirImprimirUrl(docs[i++], prox); };
+    prox();
+  }
+
+  function imprimirFoto(motoId){
+    const {foto} = coletarUrls(motoId);
+    if (!foto) return;
+    abrirImprimirUrl(foto);
+  }
+
+  function imprimirTudo(motoId){
+    const {foto, docs} = coletarUrls(motoId);
+    const fila = [...docs];
+    if (foto) fila.unshift(foto); // imprime a foto primeiro
+    if (!fila.length) return;
+    let i = 0;
+    const prox = () => { if (i < fila.length) abrirImprimirUrl(fila[i++], prox); };
+    prox();
+  }
+  document.addEventListener('click', function(e){
+    const btn = e.target.closest('.btn-danger[data-confirm]');
+    if (!btn) return;
+    if (!confirm(btn.getAttribute('data-confirm'))) e.preventDefault();
+  });
+</script>
+{% endblock %}

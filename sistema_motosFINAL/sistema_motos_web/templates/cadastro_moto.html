@@ -1,0 +1,201 @@
+{% extends "layout_base.html" %}
+{% block titulo %}Cadastro de Moto{% endblock %}
+{% block content %}
+<h4>🏍️ Cadastro de Moto</h4>
+
+{% if sucesso %}
+  <div class="alert alert-success d-flex align-items-center justify-content-between" role="alert">
+    <div>
+      ✅ Moto cadastrada com sucesso!
+    </div>
+    {% if pdf_garantia_url %}
+      <a href="{{ pdf_garantia_url }}" target="_blank" class="btn btn-success btn-sm">
+        📋 Baixar Termo de Garantia
+      </a>
+    {% endif %}
+  </div>
+{% endif %}
+
+<form action="/cadastro_moto" method="post" enctype="multipart/form-data">
+  <div class="row">
+    <div class="col-md-4 mb-3">
+      <label>Marca</label>
+      <input type="text" name="marca" class="form-control" required>
+    </div>
+    <div class="col-md-4 mb-3">
+      <label>Modelo</label>
+      <input type="text" name="modelo" class="form-control" required>
+    </div>
+    <div class="col-md-2 mb-3">
+      <label>Ano</label>
+      <input type="number" name="ano" class="form-control" required>
+    </div>
+    <div class="col-md-2 mb-3">
+      <label>Cor</label>
+      <input type="text" name="cor" class="form-control">
+    </div>
+
+    <div class="col-md-3 mb-3">
+      <label>Quilometragem (KM)</label>
+      <input type="text" name="km" id="km" placeholder="Ex: 10.500" class="form-control" required>
+    </div>
+    <div class="col-md-3 mb-3">
+      <label>Preço (R$)</label>
+      <input type="text" name="preco" id="preco" placeholder="Ex: R$ 12.990,50" class="form-control" required>
+    </div>
+    <div class="col-md-3 mb-3">
+      <label>Placa</label>
+      <input type="text" name="placa" class="form-control">
+    </div>
+    <div class="col-md-3 mb-3">
+      <label>Combustível</label>
+      <select name="combustivel" class="form-control" required>
+        <option value="">Selecione</option>
+        <option>Gasolina</option>
+        <option>Álcool</option>
+        <option>Flex</option>
+        <option>Elétrico</option>
+      </select>
+    </div>
+
+    <div class="col-md-4 mb-3">
+      <label>Status</label>
+      <select name="status" class="form-control" required>
+        <option value="disponível">Disponível</option>
+        <option value="vendida">Vendida</option>
+      </select>
+    </div>
+
+    <hr class="my-4">
+
+    <div class="col-md-4 mb-3">
+        <label>Renavam</label>
+        <input type="text" name="renavam" class="form-control">
+    </div>
+    <div class="col-md-4 mb-3">
+        <label>Chassi</label>
+        <input type="text" name="chassi" class="form-control">
+    </div>
+    <div class="col-md-4 mb-3">
+        <label>Data do Cadastro</label>
+        <input type="date" name="data_cadastro" class="form-control">
+    </div>
+    <div class="col-md-4 mb-3">
+        <label>Hora do Cadastro</label>
+        <input type="time" name="hora_cadastro" class="form-control">
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <label>Nome do Cliente</label>
+        <input type="text" name="nome_cliente" class="form-control">
+    </div>
+    <div class="col-md-3 mb-3">
+        <label>CPF do Cliente</label>
+        <input type="text" name="cpf_cliente" class="form-control">
+    </div>
+    <div class="col-md-3 mb-3">
+        <label>Rua do Cliente</label>
+        <input type="text" name="rua_cliente" class="form-control">
+    </div>
+    <div class="col-md-3 mb-3">
+        <label>CEP do Cliente</label>
+        <input type="text" name="cep_cliente" class="form-control">
+    </div>
+    <div class="col-md-6 mb-3">
+        <label>Celular do Cliente</label>
+        <input type="text" name="celular_cliente" class="form-control">
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <label>Referência</label>
+        <input type="text" name="referencia" class="form-control">
+    </div>
+    <div class="col-md-6 mb-3">
+        <label>Celular da Referência</label>
+        <input type="text" name="celular_referencia" class="form-control">
+    </div>
+
+    <div class="col-12 mb-3">
+        <label>Débitos (IPVA, multas, etc.)</label>
+        <input type="text" name="debitos" class="form-control">
+    </div>
+
+    <div class="col-md-12">
+      <label for="observacoes" class="form-label">Observações</label>
+      <textarea class="form-control" id="observacoes" name="observacoes" rows="3"></textarea>
+    </div>
+
+    <div class="col-md-4">
+      <label for="doc_moto" class="form-label">Documento da Moto</label>
+      <input type="file" class="form-control" id="doc_moto" name="doc_moto">
+    </div>
+    <div class="col-md-4">
+      <label for="laudo" class="form-label">Laudo</label>
+      <input type="file" class="form-control" id="laudo" name="laudo">
+    </div>
+    <div class="col-md-4">
+      <label for="comprovante_residencia" class="form-label">Comprovante de Residência</label>
+      <input type="file" class="form-control" id="comprovante_residencia" name="comprovante_residencia">
+    </div>
+    <div class="col-md-4 mt-3">
+      <label for="foto_moto" class="form-label">Foto da Moto (opcional)</label>
+      <input type="file" class="form-control" id="foto_moto" name="foto_moto" accept="image/*">
+    </div>
+  </div>
+
+  
+
+  <button type="submit" class="btn btn-success">💾 Cadastrar Moto</button>
+  <a href="/menu" class="btn btn-secondary ms-2">↩️ Voltar</a>
+</form>
+
+<script>
+// Formatação para campo KM (formato: 10.500)
+function formatarKM(valor) {
+  // Remove tudo que não é número
+  valor = valor.replace(/\D/g, '');
+  
+  // Adiciona pontos para milhares
+  valor = valor.replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.');
+  
+  return valor;
+}
+
+// Formatação para campo Preço (formato: R$ 12.990,50)
+function formatarPreco(valor) {
+  // Remove tudo que não é número
+  valor = valor.replace(/\D/g, '');
+  
+  // Converte para centavos
+  valor = (valor / 100).toFixed(2) + '';
+  valor = valor.replace('.', ',');
+  valor = valor.replace(/(\d)(\d{3})(\d{3}),/g, '$1.$2.$3,');
+  valor = valor.replace(/(\d)(\d{3}),/g, '$1.$2,');
+  
+  return 'R$ ' + valor;
+}
+
+// Aplicar formatação em tempo real
+document.getElementById('km').addEventListener('input', function(e) {
+  let valor = e.target.value;
+  e.target.value = formatarKM(valor);
+});
+
+document.getElementById('preco').addEventListener('input', function(e) {
+  let valor = e.target.value;
+  e.target.value = formatarPreco(valor);
+});
+
+// Limpar formatação antes de enviar o formulário
+document.querySelector('form').addEventListener('submit', function(e) {
+  let kmField = document.getElementById('km');
+  let precoField = document.getElementById('preco');
+  
+  // Remove formatação do KM (mantém apenas números e pontos)
+  kmField.value = kmField.value.replace(/\./g, '');
+  
+  // Remove formatação do preço (mantém apenas números e vírgula)
+  precoField.value = precoField.value.replace(/R\$ /, '').replace(/\./g, '');
+});
+</script>
+{% endblock %}

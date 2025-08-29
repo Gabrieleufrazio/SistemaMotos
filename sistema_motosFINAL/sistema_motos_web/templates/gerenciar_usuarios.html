@@ -1,0 +1,75 @@
+{% extends "layout_base.html" %}
+{% block titulo %}Gerenciar Usuários{% endblock %}
+{% block content %}
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="alert alert-{{ category }}">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+<h4>👥 Cadastro de Novo Usuário</h4>
+<form method="post" class="mb-5">
+  <input type="hidden" name="criar" value="1">
+  <div class="row">
+    <div class="col-md-3 mb-3">
+      <label>Nome</label>
+      <input type="text" name="nome" class="form-control" required>
+    </div>
+    <div class="col-md-3 mb-3">
+      <label>E-mail</label>
+      <input type="email" name="email" class="form-control" required>
+    </div>
+    <div class="col-md-3 mb-3">
+      <label>Senha</label>
+      <input type="password" name="senha" class="form-control" required>
+    </div>
+    <div class="col-md-3 mb-3">
+      <label>Tipo</label>
+      <select name="tipo" class="form-control">
+        <option value="vendedor">Vendedor</option>
+        <option value="admin">Admin</option>
+      </select>
+    </div>
+  </div>
+  <button type="submit" class="btn btn-success">💾 Criar Usuário</button>
+  <a href="/menu" class="btn btn-secondary ms-2">↩️ Voltar</a>
+</form>
+
+<hr>
+
+<h4>🔑 Usuários Cadastrados</h4>
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Nome</th>
+      <th>E-mail</th>
+      <th>Tipo</th>
+      <th>Ação</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for usuario in usuarios %}
+    <tr>
+      <td>{{ usuario[0] }}</td>
+      <td>{{ usuario[1] }}</td>
+      <td>{{ usuario[2] }}</td>
+      <td>{{ usuario[3] }}</td>
+      <td>
+        <form action="/redefinir_senha_usuario/{{ usuario[0] }}" method="post" style="display:inline-flex; gap: 5px; align-items: center;">
+          <input type="password" name="nova_senha" class="form-control form-control-sm" placeholder="Nova Senha" required minlength="4">
+          <button type="submit" class="btn btn-warning btn-sm">Redefinir</button>
+        </form>
+        <form action="/excluir_usuario/{{ usuario[0] }}" method="post" onsubmit="return confirm('Tem certeza que deseja excluir este usuário?');" style="display:inline; margin-left: 5px;">
+          <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% endblock %}

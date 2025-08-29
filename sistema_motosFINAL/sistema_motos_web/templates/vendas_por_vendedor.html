@@ -1,0 +1,72 @@
+{% extends "layout_base.html" %}
+{% block titulo %}Vendas por Vendedor{% endblock %}
+{% block content %}
+
+<h2 class="mt-4">📦 Vendas por Vendedor</h2>
+
+<!-- Filtros e Ordenação -->
+<form method="get" class="row g-3 mb-4">
+  <div class="col-md-3">
+    <label for="data_inicio" class="form-label">De:</label>
+    <input type="date" name="data_inicio" id="data_inicio" class="form-control" value="{{ request.args.get('data_inicio', '') }}">
+  </div>
+  <div class="col-md-3">
+    <label for="data_fim" class="form-label">Até:</label>
+    <input type="date" name="data_fim" id="data_fim" class="form-control" value="{{ request.args.get('data_fim', '') }}">
+  </div>
+  <div class="col-md-3">
+    <label for="ordenar_por" class="form-label">Ordenar por:</label>
+    <select name="ordenar_por" class="form-select">
+      <option value="total_vendas">Mais Vendas</option>
+      {% if session.tipo == 'admin' %}
+      <option value="total_receita">Mais Receita</option>
+      {% endif %}
+    </select>
+  </div>
+  <div class="col-md-3 d-flex align-items-end">
+    <button type="submit" class="btn btn-primary">🔍 Aplicar Filtros</button>
+    <a href="/exportar_vendas_excel" class="btn btn-success ms-2">📥 Exportar Excel</a>
+  </div>
+</form>
+
+<!-- Tabela -->
+<table class="table table-bordered table-striped">
+  <thead>
+    <tr>
+      <th>👤 Vendedor</th>
+      <th>📦 Total de Vendas</th>
+      {% if session.tipo == 'admin' %}<th>💰 Receita Total</th>{% endif %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for vendedor, total, receita in vendas %}
+    <tr>
+      <td>{{ vendedor }}</td>
+      <td>{{ total }}</td>
+      {% if session.tipo == 'admin' %}<td>{{ receita | br_moeda }}</td>{% endif %}
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<!-- Gráfico -->
+{% if session.tipo == 'admin' %}
+<canvas id="graficoVendas" height="100"></canvas>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const ctx = document.getElementById("graficoVendas").getContext("2d");
+  new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: {{ vendas | map(attribute=0) | list | tojson }},
+      datasets: [{
+        label: "💰 Receita por Vendedor",
+        data: {{ vendas | map(attribute=2) | list | tojson }},
+        backgroundColor: "rgba(54, 162, 235, 0.6)"
+      }]
+    }
+  });
+</script>
+{% endif %}
+
+{% endblock %}
