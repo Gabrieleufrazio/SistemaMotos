@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: sistema-motos
+    env: python
+    plan: free
+    region: oregon
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn app:app --workers 2 --threads 4 --timeout 180 --chdir sistema_motosFINAL/sistema_motos_web --bind 0.0.0.0:$PORT"
+    envVars:
+      - key: FLASK_SECRET_KEY
+        generateValue: true
+      - key: MYSQL_HOST
+        sync: false
+      - key: MYSQL_DATABASE
+        value: milgiros
+      - key: MYSQL_USER
+        value: milgiros
+      - key: MYSQL_PASSWORD
+        sync: false
+      - key: MYSQL_CHARSET
+        value: utf8mb4
+    disk:
+      name: static-disk
+      mountPath: /opt/render/project/src/sistema_motosFINAL/sistema_motos_web/static
+      sizeGB: 2

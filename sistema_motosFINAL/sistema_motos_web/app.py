@@ -6,7 +6,8 @@ import pandas as pd
 import os
 
 app = Flask(__name__)
-app.secret_key = "segredo123"
+# Load secret key from environment for production, fallback for local dev
+app.secret_key = os.environ.get("FLASK_SECRET_KEY", "segredo123")
 
 # Inicializa e migra o banco de dados para garantir que o schema está atualizado
 database.iniciar_db()
