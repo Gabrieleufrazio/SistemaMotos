@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, redirect, session, send_file, flash, url_for
+from flask_compress import Compress
 from werkzeug.utils import secure_filename
 from datetime import datetime
 import database
@@ -8,6 +9,16 @@ import os
 app = Flask(__name__)
 # Load secret key from environment for production, fallback for local dev
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "segredo123")
+
+# Production-oriented settings
+# Cache static files for 7 days, disable template auto-reload in prod, and allow toggling debug via env
+app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 60 * 60 * 24 * 7  # 7 days
+app.config['TEMPLATES_AUTO_RELOAD'] = False
+app.config['JSON_SORT_KEYS'] = False
+app.config['DEBUG'] = os.environ.get("FLASK_DEBUG", "0") == "1"
+
+# Enable gzip/br compression for faster responses over the network
+Compress(app)
 
 # Inicializa e migra o banco de dados para garantir que o schema está atualizado
 database.iniciar_db()
