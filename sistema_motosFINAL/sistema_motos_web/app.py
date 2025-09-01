@@ -59,27 +59,45 @@ def ensure_model_docs():
                 "Preencha com os dados da moto e do cliente.",
                 "Este é um modelo base gerado automaticamente."
             ]),
-            ("PROCURACAO.pdf", "Modelo de Procuração", [
-                "Preencha com os dados do outorgante e do outorgado.",
-                "Este é um modelo base gerado automaticamente."
+            ("PROCURACAO.pdf", "PROCURAÇÃO", [
+                "Pelo presente instrumento particular de procuração,",
+                "Eu:",
+                "CPF:",
+                "ENDEREÇO:",
+                "CEP:",
+                "Nomeia e constitui-se bastante procurado HENRIQUE NASCIMENTO BITENCOURT CPF 396.894.918-81 Residente RODOVIA SALVADOR DE LEONE 2030 CEP 06853-000 a quem concedo os mais amplos, gerais e iluminados poderes a fim de que possa defender os direitos e interesses do (a) OUTORGANTE perante as repartições públicas em geral.",
+                "Federais, Estaduais, Municipais, Autarquias, Oficiais de Registro Civil ou tabelionatos de notas, SPTrans, despachante, companhias de seguro, notadamente repartições de trânsito em geral, DETRAN/ CONTRAN/ CIRETRAN/ DENATRAN, DTP e demais órgãos autorizados de trânsito em qualquer cidade do território nacional, podendo solicitar 2ª via de CRV e CRLV, assinar/endossar transferências (DUT – Documento Único de Transferência), autorizar e acompanhar vistorias, efetuar pagamentos, receber pagamentos, receber os valores referente à venda do veículo seja à vista ou financiada, formular requerimentos, interpor recursos, reclamar, desistir, solicitar, cópias de processos, firmar declaração de venda, além de ter acesso a documentos de qualquer natureza, referente exclusivamente ao VEÍCULO descrito abaixo.",
+                "Cláusula de Responsabilidade por Débitos Anteriores",
+                "Declaro que qualquer débito existente antes da venda, como multas, são de minha inteira responsabilidade.",
+                "Caso venham a existir débitos e eu não regularize os mesmos, autorizo expressamente que meu nome seja negativado em órgãos de proteção ao crédito (SPC, SERASA, etc.), conforme já acordado neste documento.",
+                "",
+                "MARCA/MODELO:",
+                "ANO/MODELO:",
+                "COR:",
+                "PLACA:",
+                "RENAVAM:",
+                "CHASSI:",
+                "Nos termos da Portaria Detran/SP nº 1680, cap II, art 8, Parágrafo VI.",
+                "",
+                "_________________________________________     Assinar e reconhecer firma por autenticidade",
             ]),
         ]
         for nome, titulo, linhas in docs:
             caminho = os.path.join(STATIC_FOLDER_ABS, nome)
-            if not os.path.exists(caminho):
-                c = canvas.Canvas(caminho, pagesize=A4)
-                width, height = A4
-                c.setFont("Helvetica-Bold", 18)
-                c.drawString(72, height - 72, titulo)
-                c.setFont("Helvetica", 11)
-                y = height - 110
-                for ln in linhas:
-                    c.drawString(72, y, ln)
-                    y -= 18
-                c.setFont("Helvetica-Oblique", 9)
-                c.drawString(72, 36, f"Gerado automaticamente em {datetime.date.today().isoformat()}")
-                c.showPage()
-                c.save()
+            # Sempre (re)gerar o PDF do modelo para refletir atualizações de conteúdo
+            c = canvas.Canvas(caminho, pagesize=A4)
+            width, height = A4
+            c.setFont("Helvetica-Bold", 18)
+            c.drawString(72, height - 72, titulo)
+            c.setFont("Helvetica", 11)
+            y = height - 110
+            for ln in linhas:
+                c.drawString(72, y, ln)
+                y -= 18
+            c.setFont("Helvetica-Oblique", 9)
+            c.drawString(72, 36, f"Gerado automaticamente em {datetime.date.today().isoformat()}")
+            c.showPage()
+            c.save()
     except Exception as e:
         print(f"Não foi possível gerar modelos PDF: {e}")
 
@@ -166,6 +184,22 @@ def download_procuracao():
     if not os.path.exists(caminho):
         return redirect("/cadastro_moto")
     return send_file(caminho, as_attachment=True, download_name="PROCURACAO.pdf")
+
+# Procuração dinâmica por moto
+@app.route("/download_procuracao/<int:moto_id>")
+def download_procuracao_moto(moto_id: int):
+    if "usuario" not in session:
+        return redirect("/")
+    try:
+        caminho_pdf = database.gerar_pdf_procuracao(moto_id)
+        if caminho_pdf and os.path.exists(caminho_pdf):
+            return send_file(caminho_pdf, as_attachment=True, download_name=f"procuracao_moto_{moto_id}.pdf")
+        else:
+            print(f"Procuração não encontrada/gerada para moto {moto_id}: {caminho_pdf}")
+            return redirect("/listar_motos")
+    except Exception as e:
+        print(f"Erro ao gerar/baixar procuração da moto {moto_id}: {e}")
+        return redirect("/listar_motos")
 
 # LOGIN
 @app.route("/", methods=["GET", "POST"])
@@ -344,6 +378,12 @@ def listar_motos():
             proc_path = os.path.join(base_static, f"procuracao_moto_{moto_id}.pdf")
             if os.path.exists(proc_path):
                 procuracao_urls[moto_id] = url_for('static', filename=os.path.basename(proc_path))
+            else:
+                # Fallback: rota dinâmica para gerar e baixar a procuração
+                try:
+                    procuracao_urls[moto_id] = url_for('download_procuracao_moto', moto_id=moto_id)
+                except Exception:
+                    pass
             # Foto: procurar por extensões conhecidas
             for ext in ['.jpg', '.jpeg', '.png', '.gif', '.webp']:
                 p = os.path.join(app.config['UPLOAD_FOLDER'], f"foto_moto_{moto_id}{ext}")
