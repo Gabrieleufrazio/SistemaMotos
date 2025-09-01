@@ -116,13 +116,13 @@
       </div>
     </div>
     <div class="col-md-4 mb-3">
-      <label>Laudo</label>
+      <label>Documento do Fornecedor</label>
       <div class="d-flex align-items-center gap-2">
-        {% set laudo_url = file_url(moto[13]) %}
-        {% if laudo_url %}
-          <a href="{{ laudo_url }}" target="_blank" class="btn btn-sm btn-outline-info">Ver atual</a>
+        {% set documento_fornecedor_url = file_url(moto[13]) %}
+        {% if documento_fornecedor_url %}
+          <a href="{{ documento_fornecedor_url }}" target="_blank" class="btn btn-sm btn-outline-info">Ver atual</a>
         {% endif %}
-        <input type="file" name="laudo" class="form-control">
+        <input type="file" name="documento_fornecedor" class="form-control">
       </div>
     </div>
     <div class="col-md-4 mb-3">

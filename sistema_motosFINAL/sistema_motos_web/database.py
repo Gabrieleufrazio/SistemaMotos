@@ -42,7 +42,7 @@ def migrar_db():
         colunas_necessarias = [
             ("renavam", "VARCHAR(255)"),
             ("doc_moto", "VARCHAR(255)"),
-            ("laudo", "VARCHAR(255)"),
+            ("documento_fornecedor", "VARCHAR(255)"),
             ("comprovante_residencia", "VARCHAR(255)"),
             ("data_cadastro", "DATE"),
             ("hora_cadastro", "TIME"),
@@ -62,6 +62,15 @@ def migrar_db():
                 print(f"Aplicando migração: Adicionando coluna '{nome_coluna}' à tabela 'motos'.")
                 cursor.execute(f"ALTER TABLE motos ADD COLUMN {nome_coluna} {tipo_coluna}")
                 conn.commit()
+
+        # Renomear coluna antiga 'laudo' para 'documento_fornecedor' se existir e a nova não existir
+        if 'laudo' in colunas_motos and 'documento_fornecedor' not in colunas_motos:
+            try:
+                print("Aplicando migração: Renomeando coluna 'laudo' para 'documento_fornecedor' em 'motos'.")
+                cursor.execute("ALTER TABLE motos CHANGE COLUMN laudo documento_fornecedor VARCHAR(255)")
+                conn.commit()
+            except Exception as e:
+                print(f"Falha ao renomear coluna laudo->documento_fornecedor: {e}")
 
         # Verificar existência da tabela 'vendas' e criar/alterar conforme necessário
         try:
@@ -141,7 +150,7 @@ def iniciar_db():
             renavam VARCHAR(255),
             chassi VARCHAR(255),
             doc_moto VARCHAR(255),
-            laudo VARCHAR(255),
+            documento_fornecedor VARCHAR(255),
             comprovante_residencia VARCHAR(255),
             data_cadastro DATE,
             hora_cadastro TIME,
@@ -680,14 +689,14 @@ def cadastrar_moto(dados):
     cursor.execute("""
         INSERT INTO motos (
             marca, modelo, ano, cor, km, preco, placa, combustivel, status,
-            renavam, chassi, doc_moto, laudo, comprovante_residencia, data_cadastro, hora_cadastro,
+            renavam, chassi, doc_moto, documento_fornecedor, comprovante_residencia, data_cadastro, hora_cadastro,
             nome_cliente, cpf_cliente, rua_cliente, cep_cliente, celular_cliente, referencia, celular_referencia, debitos, observacoes
         )
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
     """, (
         dados["marca"], dados["modelo"], dados["ano"], dados["cor"],
         dados["km"], dados["preco"], dados["placa"], dados["combustivel"], dados["status"],
-        dados.get("renavam"), dados.get("chassi"), dados.get("doc_moto"), dados.get("laudo"),
+        dados.get("renavam"), dados.get("chassi"), dados.get("doc_moto"), dados.get("documento_fornecedor"),
         dados.get("comprovante_residencia"), dados.get("data_cadastro"),
         dados.get("hora_cadastro"), dados.get("nome_cliente"),
         dados.get("cpf_cliente"), dados.get("rua_cliente"), dados.get("cep_cliente"),
@@ -766,7 +775,7 @@ def atualizar_moto(id, dados):
           renavam = %s,
           chassi = %s,
           doc_moto = COALESCE(%s, doc_moto),
-          laudo = COALESCE(%s, laudo),
+          documento_fornecedor = COALESCE(%s, documento_fornecedor),
           comprovante_residencia = COALESCE(%s, comprovante_residencia),
           data_cadastro = %s,
           hora_cadastro = %s,
@@ -787,7 +796,7 @@ def atualizar_moto(id, dados):
         dados.get("renavam"),
         dados.get("chassi"),
         dados.get("doc_moto"),
-        dados.get("laudo"),
+        dados.get("documento_fornecedor"),
         dados.get("comprovante_residencia"),
         dados.get("data_cadastro"),
         dados.get("hora_cadastro"),

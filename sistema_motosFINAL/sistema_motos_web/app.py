@@ -1,5 +1,11 @@
 from flask import Flask, render_template, request, redirect, session, send_file, flash, url_for
-from flask_compress import Compress
+try:
+    from flask_compress import Compress
+except Exception:
+    # Fallback no-op Compress if Flask-Compress is not available
+    class Compress:  # type: ignore
+        def __init__(self, *args, **kwargs):
+            pass
 from werkzeug.utils import secure_filename
 from datetime import datetime
 import database
@@ -240,7 +246,7 @@ def cadastro_moto():
         }
 
         # Processar uploads
-        for campo in ['doc_moto', 'laudo', 'comprovante_residencia']:
+        for campo in ['doc_moto', 'documento_fornecedor', 'comprovante_residencia']:
             if campo in request.files:
                 file = request.files[campo]
                 if file and file.filename != '':
@@ -402,7 +408,7 @@ def editar_moto(id):
         }
 
         # Uploads opcionais: se enviar novo arquivo, substitui; se não, mantém o existente
-        for campo in ['doc_moto', 'laudo', 'comprovante_residencia']:
+        for campo in ['doc_moto', 'documento_fornecedor', 'comprovante_residencia']:
             if campo in request.files:
                 file = request.files[campo]
                 if file and file.filename != '':

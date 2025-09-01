@@ -127,14 +127,14 @@
             <a href="{{ doc_url }}" target="_blank" class="btn btn-sm btn-outline-info">Doc</a>
           {% endif %}
         {% endif %}
-        {% set laudo_url = file_url(m[13]) %}
-        {% if laudo_url %}
+        {% set documento_fornecedor_url = file_url(m[13]) %}
+        {% if documento_fornecedor_url %}
           {% if m[13]|is_image %}
-            <a href="{{ laudo_url }}" target="_blank" title="Laudo">
-              <img src="{{ laudo_url }}" alt="Laudo" class="img-thumbnail me-1" style="height:48px; width:auto;">
+            <a href="{{ documento_fornecedor_url }}" target="_blank" title="Documento do Fornecedor">
+              <img src="{{ documento_fornecedor_url }}" alt="Documento do Fornecedor" class="img-thumbnail me-1" style="height:48px; width:auto;">
             </a>
           {% else %}
-            <a href="{{ laudo_url }}" target="_blank" class="btn btn-sm btn-outline-info">Laudo</a>
+            <a href="{{ documento_fornecedor_url }}" target="_blank" class="btn btn-sm btn-outline-info">Doc Fornecedor</a>
           {% endif %}
         {% endif %}
         {% set resid_url = file_url(m[14]) %}
@@ -167,8 +167,8 @@
           {% if doc_url %}
             <span data-url-doc="{{ doc_url }}"></span>
           {% endif %}
-          {% if laudo_url %}
-            <span data-url-laudo="{{ laudo_url }}"></span>
+          {% if documento_fornecedor_url %}
+            <span data-url-doc-fornecedor="{{ documento_fornecedor_url }}"></span>
           {% endif %}
           {% if resid_url %}
             <span data-url-resid="{{ resid_url }}"></span>
@@ -217,7 +217,7 @@
     if (!cont) return {foto:null, docs:[]};
     const fotoEl = cont.querySelector('[data-url-foto]');
     const urls = [];
-    ['data-url-doc','data-url-laudo','data-url-resid','data-url-procuracao']
+    ['data-url-doc','data-url-doc-fornecedor','data-url-resid','data-url-procuracao']
       .forEach(attr => cont.querySelectorAll('['+attr+']').forEach(el => urls.push(el.getAttribute(attr))));
     return { foto: fotoEl ? fotoEl.getAttribute('data-url-foto') : null, docs: urls };
   }
