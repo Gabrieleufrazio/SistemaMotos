@@ -582,7 +582,7 @@ def gerar_pdf_procuracao(moto_id, venda_id=None):
         "Pelo presente instrumento particular de procuração, Eu:",
         f"{nome_cliente or ''}",
         f"CPF: {cpf_cliente or ''}",
-        f"RUA {rua_cliente or ''}",
+        f"ENDEREÇO: {rua_cliente or ''}",
         f"CEP: {cep_cliente or ''}",
     ]
     for ln in bloco_topo:
@@ -591,11 +591,11 @@ def gerar_pdf_procuracao(moto_id, venda_id=None):
             y -= 16
 
     y -= 6
-    # Linha do outorgado (procuração para)
-    # Após "procurado" colocar nome do cliente, e na sequência CPF e residente (rua)
+    # Linha do OUTORGADO (procurador fixo conforme modelo legal)
     bloco_outorgado = [
-        f"Nomeia e constitui-se bastante procurado {nome_cliente or ''}",
-        f"CPF {cpf_cliente or ''}  Residente {rua_cliente or ''} CEP {cep_cliente or ''}",
+        "Nomeia e constitui-se bastante procurado HENRIQUE NASCIMENTO BITENCOURT",
+        "CPF 396.894.918-81  Residente na Rua Maria Rosa da Silva, n° 266 -"
+        " Jardim Jussara, CEP 06787-140",
         "a quem concedo os mais amplos, gerais e iluminados poderes a fim",
         "de que possa defender os direitos e interesses do (a) OUTORGANTE perante as",
         "repartições públicas em geral. Federais, Estaduais, Municipais, Autarquias,",

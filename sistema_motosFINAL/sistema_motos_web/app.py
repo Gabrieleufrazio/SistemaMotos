@@ -375,15 +375,11 @@ def listar_motos():
             pdf_path = os.path.join(base_static, f"exibicao_moto_{moto_id}.pdf")
             if os.path.exists(pdf_path):
                 exibicao_urls[moto_id] = url_for('static', filename=os.path.basename(pdf_path))
-            proc_path = os.path.join(base_static, f"procuracao_moto_{moto_id}.pdf")
-            if os.path.exists(proc_path):
-                procuracao_urls[moto_id] = url_for('static', filename=os.path.basename(proc_path))
-            else:
-                # Fallback: rota dinâmica para gerar e baixar a procuração
-                try:
-                    procuracao_urls[moto_id] = url_for('download_procuracao_moto', moto_id=moto_id)
-                except Exception:
-                    pass
+            # Sempre usar rota dinâmica para garantir dados atualizados
+            try:
+                procuracao_urls[moto_id] = url_for('download_procuracao_moto', moto_id=moto_id)
+            except Exception:
+                pass
             # Foto: procurar por extensões conhecidas
             for ext in ['.jpg', '.jpeg', '.png', '.gif', '.webp']:
                 p = os.path.join(app.config['UPLOAD_FOLDER'], f"foto_moto_{moto_id}{ext}")
