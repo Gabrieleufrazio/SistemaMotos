@@ -497,8 +497,7 @@ def gerar_pdf_garantia(moto_id, venda_id=None):
     c.drawString(margem_esq, y, "_________________________")
     c.drawString(margem_esq + 260, y, "______________________")
     y -= 14
-    c.drawString(margem_esq, y, "ROSELI BARBOSA")
-    c.drawString(margem_esq + 260, y, "1000GIROSMOTOS")
+    c.drawString(margem_esq, y, f"{str(nome_cliente or '')}")
     y -= 14
     c.drawString(margem_esq, y, vendedor_nome)
     c.drawString(margem_esq + 260, y, f"CNPJ {vendedor_cnpj}")
