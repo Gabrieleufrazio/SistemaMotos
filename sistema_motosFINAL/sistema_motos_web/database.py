@@ -594,8 +594,8 @@ def gerar_pdf_procuracao(moto_id, venda_id=None):
     # Linha do OUTORGADO (procurador fixo conforme modelo legal)
     bloco_outorgado = [
         "Nomeia e constitui-se bastante procurado HENRIQUE NASCIMENTO BITENCOURT",
-        "CPF 396.894.918-81  Residente na Rua Maria Rosa da Silva, n° 266 -"
-        " Jardim Jussara, CEP 06787-140",
+        "CPF 396.894.918-81  Residente RODOVIA SALVADOR DE LEONE 2030"
+        "CEP 06853-000",
         "a quem concedo os mais amplos, gerais e iluminados poderes a fim",
         "de que possa defender os direitos e interesses do (a) OUTORGANTE perante as",
         "repartições públicas em geral. Federais, Estaduais, Municipais, Autarquias,",
