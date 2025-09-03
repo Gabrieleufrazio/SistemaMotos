@@ -884,9 +884,11 @@ def vendas_por_vendedor():
 
     # Query com JOIN para calcular receita total
     query = """
-        SELECT v.vendedor, COUNT(*) AS total_vendas, COALESCE(SUM(m.preco), 0) AS receita_total
+        SELECT v.vendedor,
+               COUNT(m.id) AS total_vendas,
+               COALESCE(SUM(COALESCE(v.preco_final, m.preco)), 0) AS receita_total
         FROM vendas v
-        LEFT JOIN motos m ON v.moto_id = m.id
+        INNER JOIN motos m ON v.moto_id = m.id
         WHERE 1=1
     """
     params = []
@@ -914,13 +916,18 @@ def vendas_por_vendedor():
 def exportar_vendas_excel():
     import pandas as pd
     conn = database.get_db_connection()
-    df = pd.read_sql("""
-        SELECT v.vendedor, COUNT(*) AS total_vendas, COALESCE(SUM(m.preco), 0) AS receita_total
+    df = pd.read_sql(
+        """
+        SELECT v.vendedor,
+               COUNT(m.id) AS total_vendas,
+               COALESCE(SUM(COALESCE(v.preco_final, m.preco)), 0) AS receita_total
         FROM vendas v
-        LEFT JOIN motos m ON v.moto_id = m.id
+        INNER JOIN motos m ON v.moto_id = m.id
         GROUP BY v.vendedor
         ORDER BY total_vendas DESC
-    """, conn)
+        """,
+        conn,
+    )
     conn.close()
 
     pasta = os.path.join(app.root_path, "static", "exports")

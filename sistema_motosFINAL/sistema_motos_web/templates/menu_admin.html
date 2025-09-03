@@ -6,18 +6,21 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
     body {
-      background: radial-gradient(ellipse at top, #1f2937, #0b0f17);
-      color: #111;
+      background-image: url("{{ url_for('static', filename='1000_Giros _LOGO.png') }}?v=2");
+      background-size: contain;
+      background-position: center center;
+      background-repeat: no-repeat;
+      background-color: #0f1115;
       min-height: 100vh;
+      color: #111;
     }
+    /* overlay sutil como na página de login */
+    .overlay { position: fixed; inset: 0; background: radial-gradient(ellipse at center, rgba(0,0,0,0.15), rgba(0,0,0,0.35)); pointer-events: none; }
     .hero {
-      background: url('/static/fundo_moto.jpg') center/cover no-repeat;
       position: relative;
+      background: none;
     }
-    .hero::after {
-      content: "";
-      position: absolute; inset: 0; background: rgba(0,0,0,.55);
-    }
+    .hero::after { content: none; }
     .hero-inner { position: relative; z-index: 1; }
     .glass {
       background: rgba(255,255,255,.9);
@@ -29,6 +32,7 @@
   </style>
 </head>
 <body>
+  <div class="overlay"></div>
   <header class="hero text-white py-5 text-center">
     <div class="hero-inner container">
       <img src="/static/fundo_moto.jpg" class="rounded-circle shadow" style="width: 90px; height: 90px; object-fit: cover; border: 3px solid rgba(255,255,255,.5);">

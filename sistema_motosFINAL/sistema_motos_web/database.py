@@ -245,16 +245,13 @@ def get_todos_usuarios():
     return usuarios
 
 def excluir_usuario(usuario_id):
-    """Exclui um usuário pelo ID, impedindo remoção de administradores."""
+    """Exclui um usuário pelo ID (sem restrição por tipo/ID)."""
     conn = get_db_connection()
     cursor = conn.cursor()
-    # Não permitir apagar usuários admin
-    cursor.execute("SELECT tipo FROM usuarios WHERE id = %s", (usuario_id,))
+    # Verifica existência para retornar False se não existir
+    cursor.execute("SELECT id FROM usuarios WHERE id = %s", (usuario_id,))
     row = cursor.fetchone()
     if not row:
-        conn.close()
-        return False
-    if row[0] == "admin":
         conn.close()
         return False
     cursor.execute("DELETE FROM usuarios WHERE id = %s", (usuario_id,))
@@ -960,7 +957,15 @@ def gerar_relatorio():
             m[5] or 0, m[6] or 0, m[7] or "", m[8] or "", status
         ))
 
-    cursor.execute("SELECT vendedor, COUNT(*) FROM vendas GROUP BY vendedor")
+    # Contar vendas por vendedor apenas para motos existentes (exclui motos deletadas)
+    cursor.execute(
+        """
+        SELECT v.vendedor, COUNT(m.id)
+        FROM vendas v
+        INNER JOIN motos m ON v.moto_id = m.id
+        GROUP BY v.vendedor
+        """
+    )
     vendas = cursor.fetchall()
 
     conn.close()
