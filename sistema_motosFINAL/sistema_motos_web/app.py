@@ -555,9 +555,9 @@ def registrar_venda():
             procuracao_path = database.gerar_pdf_procuracao(moto_id, venda_id=resultado)
             procuracao_url = url_for('static', filename=os.path.basename(procuracao_path)) if procuracao_path else None
             # Montar URLs de visualização/impressão dos anexos (se existirem)
-            cnh_url = url_for('static', filename=f"uploads/{cnh_filename}") if cnh_filename else None
-            garantia_anexada_url = url_for('static', filename=f"uploads/{garantia_filename}") if garantia_filename else None
-            endereco_url = url_for('static', filename=f"uploads/{endereco_filename}") if endereco_filename else None
+            cnh_url = _file_url(cnh_filename) if cnh_filename else None
+            garantia_anexada_url = _file_url(garantia_filename) if garantia_filename else None
+            endereco_url = _file_url(endereco_filename) if endereco_filename else None
             return render_template(
                 tpl_registro,
                 sucesso=True,

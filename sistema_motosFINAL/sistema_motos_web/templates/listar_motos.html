@@ -67,7 +67,7 @@
       {% else %}
         <th>Preço</th>
       {% endif %}
-      <th>Placa</th><th>Combustível</th><th>Status</th><th>Foto</th><th>Documentos</th><th>Ações</th>
+      <th>Placa</th><th>Combustível</th><th>Status</th><th>Foto</th><th>Documentos</th><th>Observações</th><th>Ações</th>
     </tr>
   </thead>
   <tbody>
@@ -149,6 +149,14 @@
         {% endif %}
         {% if procuracao_urls and procuracao_urls.get(m[0]) %}
           <a href="{{ procuracao_urls.get(m[0]) }}" target="_blank" class="btn btn-sm btn-outline-secondary">Procuração</a>
+        {% endif %}
+      </td>
+      <td>
+        {% set obs = m[25] %}
+        {% if obs %}
+          {{ obs[:80] }}{% if obs|length > 80 %}...{% endif %}
+        {% else %}
+          —
         {% endif %}
       </td>
       <td>
