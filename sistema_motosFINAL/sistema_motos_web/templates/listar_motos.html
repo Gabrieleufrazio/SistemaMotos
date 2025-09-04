@@ -5,7 +5,7 @@
 <style>
   /* Compactar a tabela desta página */
   .table.table-sm td, .table.table-sm th {
-    padding: 0.35rem 0.5rem; /* um pouco maior para evitar sobreposição */
+    padding: 0.45rem 0.6rem; /* levemente maior para dar mais respiro */
   }
   /* Miniaturas um pouco menores para reduzir a altura da linha */
   .table.table-sm img.img-thumbnail {
@@ -19,18 +19,27 @@
   .table.table-sm .img-thumbnail.me-1 { margin-right: 0.2rem !important; }
   /* Garantir que os botões de documentos nunca se sobreponham */
   .docs-td .docs-wrap .btn {
-    display: block;           /* um por linha */
+    display: block;           /* um por linha para os principais */
     width: 100%;              /* ocupa a largura da célula */
-    white-space: normal;      /* permite quebra dentro do texto do botão */
+    white-space: nowrap;      /* mantém compacto */
+    overflow: hidden;
+    text-overflow: ellipsis;
     text-align: left;         /* leitura melhor quando largo */
+    border-radius: 10px;
+    border-width: 1px;
+    padding: 0.25rem 0.5rem;
   }
-  /* Exceção: linha horizontal para Doc Extra + Procuração lado a lado */
-  .docs-td .docs-wrap .docs-inline .btn {
-    display: inline-block;
-    width: auto;
-    white-space: nowrap;
-    text-align: center;
-  }
+  /* Espaçamento e largura mínima da coluna de documentos */
+  td.docs-td { min-width: 220px; }
+  .docs-td .docs-wrap { display: grid; gap: 8px; }
+  /* Exceção: Doc Extra + Procuração lado a lado em duas colunas responsivas */
+  .docs-td .docs-wrap .docs-inline { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .docs-td .docs-wrap .docs-inline .btn { width: 100%; text-align: center; }
+  /* Aparência mais suave para os botões só nesta coluna */
+  .docs-td a.btn.btn-outline-info { background: #f7fafc; border-color: #cfd7e1; color: #1f4e79; }
+  .docs-td a.btn.btn-outline-info:hover { background: #e9f2fb; border-color: #b5c5da; color: #143a5a; }
+  .docs-td a.btn.btn-outline-secondary { background: #f8f9fb; border-color: #d7dbe2; color: #495057; }
+  .docs-td a.btn.btn-outline-secondary:hover { background: #eceff4; border-color: #c6ccd6; color: #343a40; }
 </style>
 
 <form method="get" class="row g-2 mb-4">
@@ -150,25 +159,25 @@
         <div class="docs-wrap d-flex flex-column" style="gap: 4px;">
           {% set doc_url = file_url(m[12]) %}
           {% if doc_url %}
-            <a href="{{ doc_url }}" target="_blank" class="btn btn-sm btn-outline-info">Doc</a>
+            <a href="{{ doc_url }}" target="_blank" class="btn btn-sm btn-outline-info" title="Documento da moto">📄 Documento Moto</a>
           {% endif %}
           {% set documento_fornecedor_url = file_url(m[13]) %}
           {% if documento_fornecedor_url %}
-            <a href="{{ documento_fornecedor_url }}" target="_blank" class="btn btn-sm btn-outline-info">Doc Fornecedor</a>
+            <a href="{{ documento_fornecedor_url }}" target="_blank" class="btn btn-sm btn-outline-info" title="Documento do fornecedor">🏷 Fornecedor</a>
           {% endif %}
           <div class="docs-inline">
             {% set resid_url = file_url(m[14]) %}
             {% if resid_url %}
-              <a href="{{ resid_url }}" target="_blank" class="btn btn-sm btn-outline-info">Doc Extra</a>
+              <a href="{{ resid_url }}" target="_blank" class="btn btn-sm btn-outline-info" title="Documento extra">🗂 Residência</a>
             {% endif %}
             {% if procuracao_urls and procuracao_urls.get(m[0]) %}
-              <a href="{{ procuracao_urls.get(m[0]) }}" target="_blank" class="btn btn-sm btn-outline-secondary">Procuração</a>
+              <a href="{{ procuracao_urls.get(m[0]) }}" target="_blank" class="btn btn-sm btn-outline-secondary" title="Procuração">📝 Proc.</a>
             {% endif %}
           </div>
           {# CNH da última venda, se houver - sempre como botão (fica abaixo do grupo) #}
           {% if anexos_venda and anexos_venda.get(m[0]) and anexos_venda.get(m[0])['cnh'] %}
             {% set cnh_link = anexos_venda.get(m[0])['cnh'] %}
-            <a href="{{ cnh_link }}" target="_blank" class="btn btn-sm btn-outline-secondary">CNH</a>
+            <a href="{{ cnh_link }}" target="_blank" class="btn btn-sm btn-outline-secondary" title="CNH do comprador">🪪 CNH</a>
           {% endif %}
         </div>
       </td>

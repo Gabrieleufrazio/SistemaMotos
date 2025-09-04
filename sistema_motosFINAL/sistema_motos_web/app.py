@@ -157,7 +157,9 @@ def _file_url(filename: str):
     caminho_static = os.path.join(STATIC_FOLDER_ABS, base)
     if os.path.exists(caminho_static):
         return url_for('static', filename=base)
-    return None
+    # Fallback: sempre tentar servir de static/uploads mesmo que a checagem falhe
+    # Isso evita sumiço de botões por falha intermitente na checagem de existência
+    return url_for('static', filename=f'uploads/{base}')
 
 app.jinja_env.globals['file_url'] = _file_url
 
