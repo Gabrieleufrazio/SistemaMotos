@@ -114,7 +114,7 @@
       {% else %}
         <th>Preço</th>
       {% endif %}
-      <th>Placa</th><th>Combustível</th><th>Status</th><th>Foto</th><th>Documentos</th><th>Ações</th>
+      <th>Placa</th><th>Combustível</th><th>Status</th><th>Foto</th><th>Documentos</th><th>Documentos Venda</th><th>Ações</th>
     </tr>
   </thead>
   <tbody>
@@ -187,15 +187,34 @@
             {% if procuracao_urls and procuracao_urls.get(m[0]) %}
               <li><a class="dropdown-item" href="{{ procuracao_urls.get(m[0]) }}" target="_blank">📝 Procuração</a></li>
             {% endif %}
-            {% if anexos_venda and anexos_venda.get(m[0]) and anexos_venda.get(m[0])['cnh'] %}
-              {% set cnh_link = anexos_venda.get(m[0])['cnh'] %}
-              <li><a class="dropdown-item" href="{{ cnh_link }}" target="_blank">🪪 CNH</a></li>
-            {% endif %}
             {% if not (doc_url or documento_fornecedor_url or resid_url or (procuracao_urls and procuracao_urls.get(m[0])) or (anexos_venda and anexos_venda.get(m[0]) and anexos_venda.get(m[0])['cnh'])) %}
               <li><span class="dropdown-item text-muted">Sem documentos</span></li>
             {% endif %}
           </ul>
         </div>
+      </td>
+      <td class="docs-td" style="vertical-align: top;">
+        {% set venda_docs = anexos_venda.get(m[0]) if anexos_venda else None %}
+        {% if venda_docs and (venda_docs['cnh'] or venda_docs['garantia'] or venda_docs['endereco']) %}
+          <div class="btn-group">
+            <button type="button" class="btn btn-sm btn-outline-info dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+              📎 Documentos Venda
+            </button>
+            <ul class="dropdown-menu">
+              {% if venda_docs['cnh'] %}
+                <li><a class="dropdown-item" href="{{ venda_docs['cnh'] }}" target="_blank">🪪 CNH</a></li>
+              {% endif %}
+              {% if venda_docs['garantia'] %}
+                <li><a class="dropdown-item" href="{{ venda_docs['garantia'] }}" target="_blank">📋 Garantia</a></li>
+              {% endif %}
+              {% if venda_docs['endereco'] %}
+                <li><a class="dropdown-item" href="{{ venda_docs['endereco'] }}" target="_blank">🏠 Endereço</a></li>
+              {% endif %}
+            </ul>
+          </div>
+        {% else %}
+          —
+        {% endif %}
       </td>
       <td class="acoes-td">
         <div class="btn-group">
