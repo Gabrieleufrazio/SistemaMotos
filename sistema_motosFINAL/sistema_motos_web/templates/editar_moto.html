@@ -44,8 +44,11 @@
     <div class="col-md-3 mb-3">
       <label>Status</label>
       <select name="status" class="form-control" required>
-        {% for s in ["disponível", "vendida"] %}
-          <option value="{{ s }}" {% if moto[9]|lower == s %}selected{% endif %}>{{ s|capitalize }}</option>
+        {% for s in ["disponível", "vendida", "consignado"] %}
+          {% set s_lower = s|lower %}
+          {% set current = (moto[9] or '')|lower %}
+          {% set is_selected = (current == s_lower) or (s_lower == 'disponível' and current == 'disponivel') %}
+          <option value="{{ s }}" {% if is_selected %}selected{% endif %}>{{ s|capitalize }}</option>
         {% endfor %}
       </select>
     </div>

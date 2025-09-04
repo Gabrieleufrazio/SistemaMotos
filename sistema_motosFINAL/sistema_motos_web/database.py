@@ -877,9 +877,17 @@ def filtrar_motos_completo(filtros):
         query += " AND preco <= %s"
         params.append(float(filtros["preco_max"]))
     if filtros["status"]:
-        query += " AND status = %s"
-        params.append(filtros["status"])
+        st = str(filtros["status"]).strip().lower()
+        # Tratar acentuação para 'disponível' vs 'disponivel'
+        if st in ("disponível", "disponivel"):
+            query += " AND (status = %s OR status = %s)"
+            params.extend(["disponível", "disponivel"])
+        else:
+            query += " AND status = %s"
+            params.append(filtros["status"])
 
+    # Ordenar por marca e modelo para organizar a listagem
+    query += " ORDER BY marca ASC, modelo ASC"
     cursor.execute(query, params)
     resultado = cursor.fetchall()
     conn.close()

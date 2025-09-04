@@ -41,6 +41,9 @@
   .docs-td a.btn.btn-outline-secondary { background: #f8f9fb; border-color: #d7dbe2; color: #495057; }
   .docs-td a.btn.btn-outline-secondary:hover { background: #eceff4; border-color: #c6ccd6; color: #343a40; }
 
+  /* Destacar motos consignadas (linha em tom de vermelho claro) */
+  tr.consignado-row { background-color: #ffe5e5; }
+
   /* Ações: compactar e evitar que aumente a altura da linha */
   td.acoes-td { min-width: 210px; }
   .acoes-wrap { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
@@ -90,7 +93,7 @@
   <div class="col-md-2">
     <select name="status" class="form-control">
       <option value="">📊 Status</option>
-      {% for s in ["disponível", "vendida"] %}
+      {% for s in ["disponível", "vendida", "consignado"] %}
         <option value="{{ s }}" {% if filtros.status == s %}selected{% endif %}>{{ s|capitalize }}</option>
       {% endfor %}
     </select>
@@ -111,12 +114,13 @@
       {% else %}
         <th>Preço</th>
       {% endif %}
-      <th>Placa</th><th>Combustível</th><th>Status</th><th>Foto</th><th>Documentos</th><th>Observações</th><th>Ações</th>
+      <th>Placa</th><th>Combustível</th><th>Status</th><th>Foto</th><th>Documentos</th><th>Ações</th>
     </tr>
   </thead>
   <tbody>
     {% for m in motos %}
-    <tr>
+    {% set st = (m[9] or '')|lower %}
+    <tr class="{% if st == 'consignado' %}consignado-row{% endif %}">
       <td>{{ m[0] }}</td><td>{{ m[1] }}</td><td>{{ m[2] }}</td><td>{{ m[3] }}</td><td>{{ m[4] }}</td>
       <td>{{ m[5]|br_km }}</td>
       {% if session.tipo == 'admin' %}
@@ -143,8 +147,9 @@
       <td>{{ m[7] }}</td>
       <td>{{ m[8] }}</td>
       <td>
-        {% set st = (m[9] or '')|lower %}
         {% if st == 'vendida' %}
+          <span style="color: red; font-weight: bold;">{{ m[9]|capitalize }}</span>
+        {% elif st == 'consignado' %}
           <span style="color: red; font-weight: bold;">{{ m[9]|capitalize }}</span>
         {% elif st == 'disponível' or st == 'disponivel' %}
           <span style="color: green; font-weight: bold;">{{ m[9]|capitalize }}</span>
@@ -191,14 +196,6 @@
             {% endif %}
           </ul>
         </div>
-      </td>
-      <td>
-        {% set obs = m[25] %}
-        {% if obs %}
-          {{ obs[:80] }}{% if obs|length > 80 %}...{% endif %}
-        {% else %}
-          —
-        {% endif %}
       </td>
       <td class="acoes-td">
         <div class="btn-group">

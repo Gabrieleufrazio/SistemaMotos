@@ -292,7 +292,8 @@ def cadastro_moto():
             "preco": float(request.form["preco"].replace(".", "").replace(",", ".")),
             "placa": request.form["placa"],
             "combustivel": request.form["combustivel"],
-            "status": "disponivel",
+            # Respeitar o status enviado no formulário (padrão: disponivel)
+            "status": (request.form.get("status") or "disponivel"),
             "data_cadastro": datetime.now().strftime("%Y-%m-%d"),
             "hora_cadastro": datetime.now().strftime("%H:%M:%S"),
             "nome_cliente": request.form.get("nome_cliente", ""),
