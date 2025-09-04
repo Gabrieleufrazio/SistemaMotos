@@ -143,7 +143,7 @@
         {% endif %}
         {% set resid_url = file_url(m[14]) %}
         {% if resid_url %}
-          <a href="{{ resid_url }}" target="_blank" class="btn btn-sm btn-outline-info">Resid.</a>
+          <a href="{{ resid_url }}" target="_blank" class="btn btn-sm btn-outline-info">Doc Extra</a>
         {% endif %}
         {# CNH da última venda, se houver - sempre como botão #}
         {% if anexos_venda and anexos_venda.get(m[0]) and anexos_venda.get(m[0])['cnh'] %}

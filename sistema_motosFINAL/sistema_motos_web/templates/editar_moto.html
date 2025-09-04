@@ -126,13 +126,13 @@
       </div>
     </div>
     <div class="col-md-4 mb-3">
-      <label>Comprovante de Residência</label>
+      <label>Documento Extra</label>
       <div class="d-flex align-items-center gap-2">
-        {% set resid_url = file_url(moto[14]) %}
-        {% if resid_url %}
-          <a href="{{ resid_url }}" target="_blank" class="btn btn-sm btn-outline-info">Ver atual</a>
+        {% set extra_url = file_url(moto[14]) %}
+        {% if extra_url %}
+          <a href="{{ extra_url }}" target="_blank" class="btn btn-sm btn-outline-info">Ver atual</a>
         {% endif %}
-        <input type="file" name="comprovante_residencia" class="form-control">
+        <input type="file" name="documento_extra" class="form-control">
       </div>
     </div>
   </div>

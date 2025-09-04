@@ -280,7 +280,7 @@ def cadastro_moto():
         }
 
         # Processar uploads
-        for campo in ['doc_moto', 'documento_fornecedor', 'comprovante_residencia']:
+        for campo in ['doc_moto', 'documento_fornecedor']:
             if campo in request.files:
                 file = request.files[campo]
                 if file and file.filename != '':
@@ -292,6 +292,15 @@ def cadastro_moto():
                     dados[campo] = None
             else:
                 dados[campo] = None
+        # Novo campo: documento_extra -> salvar em comprovante_residencia (reutilizando coluna existente)
+        extra_file = request.files.get('documento_extra')
+        if extra_file and extra_file.filename:
+            extra_name = secure_filename(extra_file.filename)
+            extra_path = os.path.join(app.config['UPLOAD_FOLDER'], extra_name)
+            extra_file.save(extra_path)
+            dados['comprovante_residencia'] = extra_name
+        else:
+            dados['comprovante_residencia'] = None
 
         try:
             moto_id = database.cadastrar_moto(dados)
@@ -465,7 +474,7 @@ def editar_moto(id):
         }
 
         # Uploads opcionais: se enviar novo arquivo, substitui; se não, mantém o existente
-        for campo in ['doc_moto', 'documento_fornecedor', 'comprovante_residencia']:
+        for campo in ['doc_moto', 'documento_fornecedor']:
             if campo in request.files:
                 file = request.files[campo]
                 if file and file.filename != '':
@@ -477,6 +486,16 @@ def editar_moto(id):
                     dados[campo] = None  # None sinaliza para manter o atual (tratado no UPDATE com COALESCE)
             else:
                 dados[campo] = None
+        # Campo renomeado no formulário de edição: documento_extra -> salvar em comprovante_residencia
+        extra_file = request.files.get('documento_extra')
+        if extra_file is not None:
+            if extra_file and extra_file.filename:
+                extra_name = secure_filename(extra_file.filename)
+                extra_path = os.path.join(app.config['UPLOAD_FOLDER'], extra_name)
+                extra_file.save(extra_path)
+                dados['comprovante_residencia'] = extra_name
+            else:
+                dados['comprovante_residencia'] = None  # mantém o atual
 
         database.atualizar_moto(id, dados)
         return redirect("/listar_motos")
