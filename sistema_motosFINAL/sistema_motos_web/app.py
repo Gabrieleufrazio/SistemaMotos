@@ -11,6 +11,7 @@ from datetime import datetime
 import database
 import pandas as pd
 import os
+import uuid
 
 app = Flask(__name__)
 # Load secret key from environment for production, fallback for local dev
@@ -47,6 +48,24 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
+
+# Helper para salvar arquivo com nome único evitando sobrescrita
+def save_unique(file_storage, field_name: str = "file", prefix: str | None = None) -> str:
+    """
+    Salva um arquivo em `UPLOAD_FOLDER` usando um nome único no formato:
+    [prefix_]field_YYYYMMDD_HHMMSS_UUID8.ext
+
+    Retorna apenas o nome do arquivo salvo (sem caminho).
+    """
+    fname = secure_filename(file_storage.filename)
+    base, ext = os.path.splitext(fname)
+    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+    uniq = uuid.uuid4().hex[:8]
+    parts = [p for p in [prefix, field_name, ts, uniq] if p]
+    safe_name = f"{'_'.join(parts)}{ext.lower()}"
+    dest = os.path.join(app.config['UPLOAD_FOLDER'], safe_name)
+    file_storage.save(dest)
+    return safe_name
 
 # Gera modelos PDF básicos em static/ se não existirem
 def ensure_model_docs():
@@ -279,15 +298,13 @@ def cadastro_moto():
             "hora_cadastro": hora_cadastro_val
         }
 
-        # Processar uploads
+        # Processar uploads com nomes únicos (evita sobrescrita)
         for campo in ['doc_moto', 'documento_fornecedor']:
             if campo in request.files:
                 file = request.files[campo]
                 if file and file.filename != '':
-                    filename = secure_filename(file.filename)
-                    file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                    file.save(file_path)
-                    dados[campo] = filename
+                    saved_name = save_unique(file, field_name=campo)
+                    dados[campo] = saved_name
                 else:
                     dados[campo] = None
             else:
@@ -295,10 +312,8 @@ def cadastro_moto():
         # Novo campo: documento_extra -> salvar em comprovante_residencia (reutilizando coluna existente)
         extra_file = request.files.get('documento_extra')
         if extra_file and extra_file.filename:
-            extra_name = secure_filename(extra_file.filename)
-            extra_path = os.path.join(app.config['UPLOAD_FOLDER'], extra_name)
-            extra_file.save(extra_path)
-            dados['comprovante_residencia'] = extra_name
+            saved_extra = save_unique(extra_file, field_name='documento_extra')
+            dados['comprovante_residencia'] = saved_extra
         else:
             dados['comprovante_residencia'] = None
 
@@ -473,27 +488,23 @@ def editar_moto(id):
             "observacoes": request.form.get("observacoes"),
         }
 
-        # Uploads opcionais: se enviar novo arquivo, substitui; se não, mantém o existente
+        # Uploads opcionais (nomes únicos). None sinaliza para manter o atual (COALESCE no UPDATE)
         for campo in ['doc_moto', 'documento_fornecedor']:
             if campo in request.files:
                 file = request.files[campo]
                 if file and file.filename != '':
-                    filename = secure_filename(file.filename)
-                    file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                    file.save(file_path)
-                    dados[campo] = filename
+                    saved_name = save_unique(file, field_name=campo, prefix=f"moto{id}")
+                    dados[campo] = saved_name
                 else:
-                    dados[campo] = None  # None sinaliza para manter o atual (tratado no UPDATE com COALESCE)
+                    dados[campo] = None
             else:
                 dados[campo] = None
         # Campo renomeado no formulário de edição: documento_extra -> salvar em comprovante_residencia
         extra_file = request.files.get('documento_extra')
         if extra_file is not None:
             if extra_file and extra_file.filename:
-                extra_name = secure_filename(extra_file.filename)
-                extra_path = os.path.join(app.config['UPLOAD_FOLDER'], extra_name)
-                extra_file.save(extra_path)
-                dados['comprovante_residencia'] = extra_name
+                saved_extra = save_unique(extra_file, field_name='documento_extra', prefix=f"moto{id}")
+                dados['comprovante_residencia'] = saved_extra
             else:
                 dados['comprovante_residencia'] = None  # mantém o atual
 
