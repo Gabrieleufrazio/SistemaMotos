@@ -40,6 +40,11 @@
   .docs-td a.btn.btn-outline-info:hover { background: #e9f2fb; border-color: #b5c5da; color: #143a5a; }
   .docs-td a.btn.btn-outline-secondary { background: #f8f9fb; border-color: #d7dbe2; color: #495057; }
   .docs-td a.btn.btn-outline-secondary:hover { background: #eceff4; border-color: #c6ccd6; color: #343a40; }
+
+  /* Ações: compactar e evitar que aumente a altura da linha */
+  td.acoes-td { min-width: 210px; }
+  .acoes-wrap { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .acoes-wrap .btn { padding: 0.12rem 0.4rem; line-height: 1.1; white-space: nowrap; }
 </style>
 
 <form method="get" class="row g-2 mb-4">
@@ -156,29 +161,34 @@
         {% endif %}
       </td>
       <td class="docs-td" style="vertical-align: top;">
-        <div class="docs-wrap d-flex flex-column" style="gap: 4px;">
-          {% set doc_url = file_url(m[12]) %}
-          {% if doc_url %}
-            <a href="{{ doc_url }}" target="_blank" class="btn btn-sm btn-outline-info" title="Documento da moto">📄 Documento Moto</a>
-          {% endif %}
-          {% set documento_fornecedor_url = file_url(m[13]) %}
-          {% if documento_fornecedor_url %}
-            <a href="{{ documento_fornecedor_url }}" target="_blank" class="btn btn-sm btn-outline-info" title="Documento do fornecedor">🏷 Fornecedor</a>
-          {% endif %}
-          <div class="docs-inline">
+        <div class="btn-group">
+          <button type="button" class="btn btn-sm btn-outline-info dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+            📎 Documentos
+          </button>
+          <ul class="dropdown-menu">
+            {% set doc_url = file_url(m[12]) %}
+            {% if doc_url %}
+              <li><a class="dropdown-item" href="{{ doc_url }}" target="_blank">📄 Documento Moto</a></li>
+            {% endif %}
+            {% set documento_fornecedor_url = file_url(m[13]) %}
+            {% if documento_fornecedor_url %}
+              <li><a class="dropdown-item" href="{{ documento_fornecedor_url }}" target="_blank">🏷 Fornecedor</a></li>
+            {% endif %}
             {% set resid_url = file_url(m[14]) %}
             {% if resid_url %}
-              <a href="{{ resid_url }}" target="_blank" class="btn btn-sm btn-outline-info" title="Documento extra">🗂 Residência</a>
+              <li><a class="dropdown-item" href="{{ resid_url }}" target="_blank">🗂 Residência</a></li>
             {% endif %}
             {% if procuracao_urls and procuracao_urls.get(m[0]) %}
-              <a href="{{ procuracao_urls.get(m[0]) }}" target="_blank" class="btn btn-sm btn-outline-secondary" title="Procuração">📝 Proc.</a>
+              <li><a class="dropdown-item" href="{{ procuracao_urls.get(m[0]) }}" target="_blank">📝 Procuração</a></li>
             {% endif %}
-          </div>
-          {# CNH da última venda, se houver - sempre como botão (fica abaixo do grupo) #}
-          {% if anexos_venda and anexos_venda.get(m[0]) and anexos_venda.get(m[0])['cnh'] %}
-            {% set cnh_link = anexos_venda.get(m[0])['cnh'] %}
-            <a href="{{ cnh_link }}" target="_blank" class="btn btn-sm btn-outline-secondary" title="CNH do comprador">🪪 CNH</a>
-          {% endif %}
+            {% if anexos_venda and anexos_venda.get(m[0]) and anexos_venda.get(m[0])['cnh'] %}
+              {% set cnh_link = anexos_venda.get(m[0])['cnh'] %}
+              <li><a class="dropdown-item" href="{{ cnh_link }}" target="_blank">🪪 CNH</a></li>
+            {% endif %}
+            {% if not (doc_url or documento_fornecedor_url or resid_url or (procuracao_urls and procuracao_urls.get(m[0])) or (anexos_venda and anexos_venda.get(m[0]) and anexos_venda.get(m[0])['cnh'])) %}
+              <li><span class="dropdown-item text-muted">Sem documentos</span></li>
+            {% endif %}
+          </ul>
         </div>
       </td>
       <td>
@@ -189,14 +199,20 @@
           —
         {% endif %}
       </td>
-      <td>
-        <a href="/editar_moto/{{ m[0] }}" class="btn btn-sm btn-warning">✏️ Editar</a>
-        <a href="/excluir_moto/{{ m[0] }}" class="btn btn-sm btn-danger" onclick="return confirm('Confirma exclusão?')">🗑️ Excluir</a>
-        <div class="mt-1"></div>
-        <!-- Botões de impressão -->
-        <button type="button" class="btn btn-sm btn-outline-primary btn-print-docs" data-moto-id="{{ m[0] }}">🖨️ Docs</button>
-        <button type="button" class="btn btn-sm btn-outline-success btn-print-foto" data-moto-id="{{ m[0] }}">🖨️ Moto</button>
-        <button type="button" class="btn btn-sm btn-outline-dark btn-print-todos" data-moto-id="{{ m[0] }}">🖨️ Todos</button>
+      <td class="acoes-td">
+        <div class="btn-group">
+          <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+            ⚙️ Ações
+          </button>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="/editar_moto/{{ m[0] }}">✏️ Editar</a></li>
+            <li><a class="dropdown-item text-danger" href="/excluir_moto/{{ m[0] }}" onclick="return confirm('Confirma exclusão?')">🗑️ Excluir</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><button type="button" class="dropdown-item btn-print-docs" data-moto-id="{{ m[0] }}">🖨️ Imprimir Docs</button></li>
+            <li><button type="button" class="dropdown-item btn-print-foto" data-moto-id="{{ m[0] }}">🖨️ Imprimir Foto</button></li>
+            <li><button type="button" class="dropdown-item btn-print-todos" data-moto-id="{{ m[0] }}">🖨️ Imprimir Tudo</button></li>
+          </ul>
+        </div>
         <!-- Container oculto com URLs para impressão desta moto -->
         <div id="print-urls-{{ m[0] }}" class="d-none">
           {% if foto_urls and (m[0] in foto_urls) %}
