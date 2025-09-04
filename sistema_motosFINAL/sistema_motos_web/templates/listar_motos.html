@@ -24,6 +24,13 @@
     white-space: normal;      /* permite quebra dentro do texto do botão */
     text-align: left;         /* leitura melhor quando largo */
   }
+  /* Exceção: linha horizontal para Doc Extra + Procuração lado a lado */
+  .docs-td .docs-wrap .docs-inline .btn {
+    display: inline-block;
+    width: auto;
+    white-space: nowrap;
+    text-align: center;
+  }
 </style>
 
 <form method="get" class="row g-2 mb-4">
@@ -149,17 +156,19 @@
           {% if documento_fornecedor_url %}
             <a href="{{ documento_fornecedor_url }}" target="_blank" class="btn btn-sm btn-outline-info">Doc Fornecedor</a>
           {% endif %}
-          {% set resid_url = file_url(m[14]) %}
-          {% if resid_url %}
-            <a href="{{ resid_url }}" target="_blank" class="btn btn-sm btn-outline-info">Doc Extra</a>
-          {% endif %}
-          {# CNH da última venda, se houver - sempre como botão #}
+          <div class="docs-inline">
+            {% set resid_url = file_url(m[14]) %}
+            {% if resid_url %}
+              <a href="{{ resid_url }}" target="_blank" class="btn btn-sm btn-outline-info">Doc Extra</a>
+            {% endif %}
+            {% if procuracao_urls and procuracao_urls.get(m[0]) %}
+              <a href="{{ procuracao_urls.get(m[0]) }}" target="_blank" class="btn btn-sm btn-outline-secondary">Procuração</a>
+            {% endif %}
+          </div>
+          {# CNH da última venda, se houver - sempre como botão (fica abaixo do grupo) #}
           {% if anexos_venda and anexos_venda.get(m[0]) and anexos_venda.get(m[0])['cnh'] %}
             {% set cnh_link = anexos_venda.get(m[0])['cnh'] %}
             <a href="{{ cnh_link }}" target="_blank" class="btn btn-sm btn-outline-secondary">CNH</a>
-          {% endif %}
-          {% if procuracao_urls and procuracao_urls.get(m[0]) %}
-            <a href="{{ procuracao_urls.get(m[0]) }}" target="_blank" class="btn btn-sm btn-outline-secondary">Procuração</a>
           {% endif %}
         </div>
       </td>
