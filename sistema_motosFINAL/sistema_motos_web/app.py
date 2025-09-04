@@ -361,6 +361,26 @@ def listar_motos():
         )
         for moto_id, preco_final in cursor.fetchall():
             sale_prices[moto_id] = float(preco_final)
+        # Também carregar anexos da última venda (CNH, Garantia assinada, Endereço)
+        anexos_venda = {}
+        cursor.execute(
+            """
+            SELECT v.moto_id, v.cnh_path, v.garantia_path, v.endereco_path
+            FROM vendas v
+            INNER JOIN (
+                SELECT moto_id, MAX(id) AS max_id
+                FROM vendas
+                GROUP BY moto_id
+            ) ult ON ult.moto_id = v.moto_id AND ult.max_id = v.id
+            WHERE v.cnh_path IS NOT NULL OR v.garantia_path IS NOT NULL OR v.endereco_path IS NOT NULL
+            """
+        )
+        for moto_id, cnh_p, gar_p, end_p in cursor.fetchall():
+            anexos_venda[moto_id] = {
+                'cnh': _file_url(cnh_p) if cnh_p else None,
+                'garantia': _file_url(gar_p) if gar_p else None,
+                'endereco': _file_url(end_p) if end_p else None,
+            }
         conn.close()
     except Exception as e:
         print(f"Aviso: falha ao carregar preços de venda: {e}")
@@ -396,6 +416,7 @@ def listar_motos():
         procuracao_urls=procuracao_urls,
         foto_urls=foto_urls,
         sale_prices=sale_prices,
+        anexos_venda=anexos_venda if 'anexos_venda' in locals() else {},
     )
 
 @app.route("/editar_moto/<int:id>", methods=["GET", "POST"])

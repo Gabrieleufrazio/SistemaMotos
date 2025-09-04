@@ -57,7 +57,7 @@
 </form>
 
 {% if motos %}
-<table class="table table-bordered table-striped">
+<table class="table table-bordered table-striped table-sm">
   <thead class="table-dark">
     <tr>
       <th>ID</th><th>Marca</th><th>Modelo</th><th>Ano</th><th>Cor</th>
@@ -145,6 +145,17 @@
             </a>
           {% else %}
             <a href="{{ resid_url }}" target="_blank" class="btn btn-sm btn-outline-info">Resid.</a>
+          {% endif %}
+        {% endif %}
+        {# CNH da última venda, se houver #}
+        {% if anexos_venda and anexos_venda.get(m[0]) and anexos_venda.get(m[0]).cnh %}
+          {% set cnh_link = anexos_venda.get(m[0]).cnh %}
+          {% if cnh_link|is_image %}
+            <a href="{{ cnh_link }}" target="_blank" title="CNH">
+              <img src="{{ cnh_link }}" alt="CNH" class="img-thumbnail me-1" style="height:48px; width:auto;">
+            </a>
+          {% else %}
+            <a href="{{ cnh_link }}" target="_blank" class="btn btn-sm btn-outline-secondary">CNH</a>
           {% endif %}
         {% endif %}
         {% if procuracao_urls and procuracao_urls.get(m[0]) %}
