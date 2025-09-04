@@ -12,6 +12,7 @@ import database
 import pandas as pd
 import os
 import uuid
+import logging
 
 app = Flask(__name__)
 # Load secret key from environment for production, fallback for local dev
@@ -45,6 +46,9 @@ except Exception as e:
 STATIC_FOLDER_ABS = os.path.join(app.root_path, 'static')
 UPLOAD_FOLDER = os.path.join(STATIC_FOLDER_ABS, 'uploads')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# Logging em arquivo desabilitado a pedido do usuário
+# Caso queira reativar no futuro, reintroduza um FileHandler aqui.
 
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
@@ -151,15 +155,25 @@ def _file_url(filename: str):
     base = os.path.basename(p)
     if not base:
         return None
+    # Se o valor parece não ser um arquivo (sem extensão) ou parece uma data, não gerar URL
+    try:
+        from re import match
+        # Sem ponto na string => provavelmente não é arquivo
+        if '.' not in base:
+            return None
+        # Padrão de data yyyy-mm-dd
+        if match(r"^\d{4}-\d{2}-\d{2}$", base):
+            return None
+    except Exception:
+        pass
     caminho_uploads = os.path.join(UPLOAD_FOLDER, base)
     if os.path.exists(caminho_uploads):
         return url_for('static', filename=f'uploads/{base}')
     caminho_static = os.path.join(STATIC_FOLDER_ABS, base)
     if os.path.exists(caminho_static):
         return url_for('static', filename=base)
-    # Fallback: sempre tentar servir de static/uploads mesmo que a checagem falhe
-    # Isso evita sumiço de botões por falha intermitente na checagem de existência
-    return url_for('static', filename=f'uploads/{base}')
+    # Sem arquivo correspondente: não gerar URL inválida
+    return None
 
 app.jinja_env.globals['file_url'] = _file_url
 
@@ -269,83 +283,72 @@ def cadastro_moto():
         return redirect("/")
     if request.method == "POST":
         preco_br = request.form["preco"].replace(".", "").replace(",", ".")
-        km_br = request.form["km"].replace(".", "").replace(",", ".")
-        # Normaliza data/hora: string vazia -> None (NULL no MySQL)
-        data_cadastro_raw = request.form.get("data_cadastro", "").strip()
-        hora_cadastro_raw = request.form.get("hora_cadastro", "").strip()
-        data_cadastro_val = data_cadastro_raw or None
-        hora_cadastro_val = hora_cadastro_raw or None
         dados = {
             "marca": request.form["marca"],
             "modelo": request.form["modelo"],
             "ano": int(request.form["ano"]),
             "cor": request.form["cor"],
-            "km": round(float(km_br), 2),
-            "preco": round(float(preco_br), 2),
+            "km": int(request.form["km"].replace(".", "")),
+            "preco": float(request.form["preco"].replace(".", "").replace(",", ".")),
             "placa": request.form["placa"],
             "combustivel": request.form["combustivel"],
-            "status": request.form["status"],
-            "renavam": request.form.get("renavam"),
-            "chassi": request.form.get("chassi"),
-            "nome_cliente": request.form.get("nome_cliente"),
-            "cpf_cliente": request.form.get("cpf_cliente"),
-            "rua_cliente": request.form.get("rua_cliente"),
-            "cep_cliente": request.form.get("cep_cliente"),
-            "celular_cliente": request.form.get("celular_cliente"),
-            "referencia": request.form.get("referencia"),
-            "celular_referencia": request.form.get("celular_referencia"),
-            "debitos": request.form.get("debitos"),
-            "observacoes": request.form.get("observacoes"),
-            "data_cadastro": data_cadastro_val,
-            "hora_cadastro": hora_cadastro_val
+            "status": "disponivel",
+            "data_cadastro": datetime.now().strftime("%Y-%m-%d"),
+            "hora_cadastro": datetime.now().strftime("%H:%M:%S"),
+            "nome_cliente": request.form.get("nome_cliente", ""),
+            "cpf_cliente": request.form.get("cpf_cliente", ""),
+            "rua_cliente": request.form.get("rua_cliente", ""),
+            "cep_cliente": request.form.get("cep_cliente", ""),
+            "celular_cliente": request.form.get("celular_cliente", ""),
+            "referencia": request.form.get("referencia", ""),
+            "celular_referencia": request.form.get("celular_referencia", ""),
+            "debitos": request.form.get("debitos", ""),
+            "observacoes": request.form.get("observacoes", ""),
+            "renavam": request.form.get("renavam", ""),
+            "chassi": request.form.get("chassi", ""),
+            "doc_moto": None,
+            "documento_fornecedor": None,
+            "comprovante_residencia": None
         }
 
-        # Processar uploads com nomes únicos (evita sobrescrita)
-        for campo in ['doc_moto', 'documento_fornecedor']:
-            if campo in request.files:
-                file = request.files[campo]
-                if file and file.filename != '':
-                    saved_name = save_unique(file, field_name=campo)
-                    dados[campo] = saved_name
-                else:
-                    dados[campo] = None
-            else:
-                dados[campo] = None
-        # Novo campo: documento_extra -> salvar em comprovante_residencia (reutilizando coluna existente)
-        extra_file = request.files.get('documento_extra')
-        if extra_file and extra_file.filename:
-            saved_extra = save_unique(extra_file, field_name='documento_extra')
-            dados['comprovante_residencia'] = saved_extra
-        else:
-            dados['comprovante_residencia'] = None
+        # Processar uploads de documentos
+        for campo_form in ['doc_moto', 'documento_fornecedor', 'documento_extra']:
+            file = request.files.get(campo_form)
+            if file and file.filename:
+                db_campo = 'comprovante_residencia' if campo_form == 'documento_extra' else campo_form
+                saved_name = save_unique(file, field_name=db_campo)
+                dados[db_campo] = saved_name
 
         try:
+            # 1. Cadastrar a moto no banco para obter o ID
             moto_id = database.cadastrar_moto(dados)
-            # Foto da moto (opcional) - salvar como nome padrao foto_moto_{id}.ext
-            try:
-                foto = request.files.get('foto_moto')
-                if foto and foto.filename:
+
+            # 2. Salvar a foto da moto usando o ID obtido
+            foto = request.files.get('foto_moto')
+            if foto and foto.filename:
+                try:
                     fname = secure_filename(foto.filename)
                     _, ext = os.path.splitext(fname)
-                    ext = (ext or '').lower()
-                    if ext in ['.jpg', '.jpeg', '.png', '.gif', '.webp']:
-                        foto_name = f"foto_moto_{moto_id}{ext}"
+                    if ext.lower() in ['.jpg', '.jpeg', '.png', '.gif', '.webp']:
+                        foto_name = f"foto_moto_{moto_id}{ext.lower()}"
                         foto_path = os.path.join(app.config['UPLOAD_FOLDER'], foto_name)
                         foto.save(foto_path)
                     else:
                         flash('Formato de imagem não suportado. Use JPG, PNG, GIF ou WEBP.', 'warning')
-            except Exception as e:
-                print(f"Falha ao salvar foto da moto {moto_id}: {e}")
-            # Não gerar Garantia no cadastro (somente após a venda, conforme solicitado)
-            pdf_url = None
-            # Gerar Procuração também no cadastro para já aparecer na listagem
+                except Exception as e:
+                    app.logger.warning(f"Falha ao salvar foto da moto {moto_id}: {e}")
+            
+            # 3. Gerar procuração
             try:
-                _ = database.gerar_pdf_procuracao(moto_id)
+                database.gerar_pdf_procuracao(moto_id)
             except Exception as e:
-                print(f"Falha ao gerar procuração para moto {moto_id}: {e}")
-            # Volta à tela de cadastro com sucesso e link do PDF
-            return render_template("cadastro_moto.html", sucesso=True, pdf_garantia_url=pdf_url)
+                app.logger.warning(f"Falha ao gerar procuração para moto {moto_id}: {e}")
+
+            flash('Moto cadastrada com sucesso!', 'success')
+            return redirect('/cadastro_moto')
+
         except Exception as e:
+            app.logger.error(f"Erro ao cadastrar a moto: {e}")
             flash(f'Erro ao cadastrar a moto: {e}', 'danger')
             return redirect('/cadastro_moto')
     return render_template("cadastro_moto.html")
@@ -477,6 +480,10 @@ def editar_moto(id):
             "status": request.form["status"],
             "renavam": request.form.get("renavam"),
             "chassi": request.form.get("chassi"),
+            # Inicializar campos de arquivos como None para manter alinhamento e usar COALESCE no UPDATE
+            "doc_moto": None,
+            "documento_fornecedor": None,
+            "comprovante_residencia": None,
             "data_cadastro": data_cadastro_val,
             "hora_cadastro": hora_cadastro_val,
             "nome_cliente": request.form.get("nome_cliente"),
@@ -487,45 +494,34 @@ def editar_moto(id):
             "referencia": request.form.get("referencia"),
             "celular_referencia": cel_ref_raw,
             "debitos": request.form.get("debitos"),
-            "observacoes": request.form.get("observacoes"),
+            # Observações: quando em branco, salvar como string vazia (não None)
+            "observacoes": (request.form.get("observacoes") or "").strip(),
         }
 
-        # Uploads opcionais (nomes únicos). None sinaliza para manter o atual (COALESCE no UPDATE)
-        for campo in ['doc_moto', 'documento_fornecedor']:
-            if campo in request.files:
-                file = request.files[campo]
-                if file and file.filename != '':
-                    saved_name = save_unique(file, field_name=campo, prefix=f"moto{id}")
-                    dados[campo] = saved_name
-                else:
-                    dados[campo] = None
-            else:
-                dados[campo] = None
-        # Campo renomeado no formulário de edição: documento_extra -> salvar em comprovante_residencia
-        extra_file = request.files.get('documento_extra')
-        if extra_file is not None:
-            if extra_file and extra_file.filename:
-                saved_extra = save_unique(extra_file, field_name='documento_extra', prefix=f"moto{id}")
-                dados['comprovante_residencia'] = saved_extra
-            else:
-                dados['comprovante_residencia'] = None  # mantém o atual
+        # Processar uploads de documentos, atualizando somente se um novo arquivo for enviado
+        for campo_form in ['doc_moto', 'documento_fornecedor', 'documento_extra']:
+            file = request.files.get(campo_form)
+            if file and file.filename:
+                db_campo = 'comprovante_residencia' if campo_form == 'documento_extra' else campo_form
+                saved_name = save_unique(file, field_name=db_campo, prefix=f"moto{id}")
+                dados[db_campo] = saved_name
+
+        
 
         # Processar foto da moto (opcional)
-        try:
-            foto = request.files.get('foto_moto')
-            if foto and foto.filename:
-                fname = secure_filename(foto.filename)
-                _, ext = os.path.splitext(fname)
-                ext = (ext or '').lower()
-                if ext in ['.jpg', '.jpeg', '.png', '.gif', '.webp']:
-                    foto_name = f"foto_moto_{id}{ext}"
-                    foto_path = os.path.join(app.config['UPLOAD_FOLDER'], foto_name)
-                    foto.save(foto_path)
-                else:
-                    flash('Formato de imagem não suportado. Use JPG, PNG, GIF ou WEBP.', 'warning')
-        except Exception as e:
-            print(f"Falha ao salvar foto da moto {id}: {e}")
+        foto = request.files.get('foto_moto')
+        if foto and foto.filename:
+            fname = secure_filename(foto.filename)
+            _, ext = os.path.splitext(fname)
+            ext = (ext or '').lower()
+            if ext in ['.jpg', '.jpeg', '.png', '.gif', '.webp']:
+                foto_name = f"foto_moto_{id}{ext}"
+                foto_path = os.path.join(app.config['UPLOAD_FOLDER'], foto_name)
+                foto.save(foto_path)
+            else:
+                flash('Formato de imagem não suportado. Use JPG, PNG, GIF ou WEBP.', 'warning')
 
+        # Efetivar atualização e redirecionar
         database.atualizar_moto(id, dados)
         return redirect("/listar_motos")
     return render_template("editar_moto.html", moto=moto)

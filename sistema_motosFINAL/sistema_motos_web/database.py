@@ -734,7 +734,16 @@ def atualizar_campos_comprador(moto_id: int, nome: str = None, cpf: str = None, 
 def listar_motos():
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM motos")
+    # Selecionar colunas em ordem explícita e estável para manter índices usados nas templates
+    cursor.execute(
+        """
+        SELECT id, marca, modelo, ano, cor, km, preco, placa, combustivel, status,
+               renavam, chassi, doc_moto, documento_fornecedor, comprovante_residencia,
+               data_cadastro, hora_cadastro, nome_cliente, cpf_cliente, rua_cliente,
+               cep_cliente, celular_cliente, referencia, celular_referencia, debitos, observacoes
+        FROM motos
+        """
+    )
     motos = cursor.fetchall()
     conn.close()
     return motos
@@ -750,7 +759,18 @@ def get_motos_basico():
 def buscar_moto(id):
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM motos WHERE id = %s", (id,))
+    # Selecionar colunas em ordem explícita e estável para manter índices usados nas templates
+    cursor.execute(
+        """
+        SELECT id, marca, modelo, ano, cor, km, preco, placa, combustivel, status,
+               renavam, chassi, doc_moto, documento_fornecedor, comprovante_residencia,
+               data_cadastro, hora_cadastro, nome_cliente, cpf_cliente, rua_cliente,
+               cep_cliente, celular_cliente, referencia, celular_referencia, debitos, observacoes
+        FROM motos
+        WHERE id = %s
+        """,
+        (id,)
+    )
     moto = cursor.fetchone()
     conn.close()
     return moto
@@ -815,7 +835,14 @@ def filtrar_motos_completo(filtros):
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    query = "SELECT * FROM motos WHERE 1=1"
+    # Selecionar colunas em ordem explícita e estável para manter índices usados nas templates
+    query = (
+        "SELECT id, marca, modelo, ano, cor, km, preco, placa, combustivel, status, "
+        "renavam, chassi, doc_moto, documento_fornecedor, comprovante_residencia, "
+        "data_cadastro, hora_cadastro, nome_cliente, cpf_cliente, rua_cliente, "
+        "cep_cliente, celular_cliente, referencia, celular_referencia, debitos, observacoes "
+        "FROM motos WHERE 1=1"
+    )
     params = []
 
     if filtros["marca_modelo"]:

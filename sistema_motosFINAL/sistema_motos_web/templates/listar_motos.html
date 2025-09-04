@@ -143,9 +143,10 @@
       <td>{{ m[7] }}</td>
       <td>{{ m[8] }}</td>
       <td>
-        {% if m[9] == 'vendida' %}
+        {% set st = (m[9] or '')|lower %}
+        {% if st == 'vendida' %}
           <span style="color: red; font-weight: bold;">{{ m[9]|capitalize }}</span>
-        {% elif m[9] == 'disponível' %}
+        {% elif st == 'disponível' or st == 'disponivel' %}
           <span style="color: green; font-weight: bold;">{{ m[9]|capitalize }}</span>
         {% else %}
           <span>{{ m[9]|capitalize }}</span>
