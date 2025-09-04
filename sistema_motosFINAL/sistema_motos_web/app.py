@@ -510,6 +510,22 @@ def editar_moto(id):
             else:
                 dados['comprovante_residencia'] = None  # mantém o atual
 
+        # Processar foto da moto (opcional)
+        try:
+            foto = request.files.get('foto_moto')
+            if foto and foto.filename:
+                fname = secure_filename(foto.filename)
+                _, ext = os.path.splitext(fname)
+                ext = (ext or '').lower()
+                if ext in ['.jpg', '.jpeg', '.png', '.gif', '.webp']:
+                    foto_name = f"foto_moto_{id}{ext}"
+                    foto_path = os.path.join(app.config['UPLOAD_FOLDER'], foto_name)
+                    foto.save(foto_path)
+                else:
+                    flash('Formato de imagem não suportado. Use JPG, PNG, GIF ou WEBP.', 'warning')
+        except Exception as e:
+            print(f"Falha ao salvar foto da moto {id}: {e}")
+
         database.atualizar_moto(id, dados)
         return redirect("/listar_motos")
     return render_template("editar_moto.html", moto=moto)

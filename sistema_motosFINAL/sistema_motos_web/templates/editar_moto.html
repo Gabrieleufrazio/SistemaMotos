@@ -135,6 +135,21 @@
         <input type="file" name="documento_extra" class="form-control">
       </div>
     </div>
+
+    <div class="col-md-4 mb-3">
+      <label>Foto da Moto</label>
+      <div class="d-flex align-items-center gap-2">
+        {% for ext in ['.jpg', '.jpeg', '.png', '.gif', '.webp'] %}
+          {% set foto_path = 'uploads/foto_moto_' + moto[0]|string + ext %}
+          {% if file_exists(foto_path.split('/')[-1]) %}
+            <a href="{{ url_for('static', filename=foto_path) }}" target="_blank" class="btn btn-sm btn-outline-info">Ver atual</a>
+            {% break %}
+          {% endif %}
+        {% endfor %}
+        <input type="file" name="foto_moto" class="form-control" accept="image/*">
+      </div>
+      <small class="text-muted">Formatos aceitos: JPG, PNG, GIF, WEBP</small>
+    </div>
   </div>
   <button type="submit" class="btn btn-success">💾 Salvar Alterações</button>
   <a href="/listar_motos" class="btn btn-secondary ms-2">↩️ Voltar</a>
