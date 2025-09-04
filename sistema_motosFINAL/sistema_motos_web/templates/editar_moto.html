@@ -140,9 +140,9 @@
       <label>Foto da Moto</label>
       <div class="d-flex align-items-center gap-2">
         {% for ext in ['.jpg', '.jpeg', '.png', '.gif', '.webp'] %}
-          {% set foto_path = 'uploads/foto_moto_' + moto[0]|string + ext %}
-          {% if file_exists(foto_path.split('/')[-1]) %}
-            <a href="{{ url_for('static', filename=foto_path) }}" target="_blank" class="btn btn-sm btn-outline-info">Ver atual</a>
+          {% set foto_filename = 'foto_moto_' + moto[0]|string + ext %}
+          {% if file_exists(foto_filename) %}
+            <a href="{{ url_for('static', filename='uploads/' + foto_filename) }}" target="_blank" class="btn btn-sm btn-outline-info">Ver atual</a>
             {% break %}
           {% endif %}
         {% endfor %}
