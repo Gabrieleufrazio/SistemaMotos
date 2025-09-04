@@ -139,11 +139,12 @@
     <div class="col-md-4 mb-3">
       <label>Foto da Moto</label>
       <div class="d-flex align-items-center gap-2">
-        {% for ext in ['.jpg', '.jpeg', '.png', '.gif', '.webp'] %}
+        {% set foto_encontrada = false %}
+        {% for ext in ['.jpg', '.jpeg', '.png', '.gif', '.webp'] if not foto_encontrada %}
           {% set foto_filename = 'foto_moto_' + moto[0]|string + ext %}
           {% if file_exists(foto_filename) %}
             <a href="{{ url_for('static', filename='uploads/' + foto_filename) }}" target="_blank" class="btn btn-sm btn-outline-info">Ver atual</a>
-            {% break %}
+            {% set foto_encontrada = true %}
           {% endif %}
         {% endfor %}
         <input type="file" name="foto_moto" class="form-control" accept="image/*">
