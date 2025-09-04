@@ -2,6 +2,22 @@
 {% block titulo %}Lista de Motos{% endblock %}
 {% block content %}
 <h4>📃 Motos Cadastradas</h4>
+<style>
+  /* Compactar a tabela desta página */
+  .table.table-sm td, .table.table-sm th {
+    padding: 0.2rem 0.35rem; /* menor que o padrão do .table-sm */
+  }
+  /* Miniaturas um pouco menores para reduzir a altura da linha */
+  .table.table-sm img.img-thumbnail {
+    height: 40px !important;
+  }
+  /* Reduzir um pouco o preenchimento dos botões pequenos */
+  .table.table-sm .btn.btn-sm {
+    padding: 0.15rem 0.35rem;
+  }
+  /* Diminuir leve espaçamento horizontal entre itens visuais */
+  .table.table-sm .img-thumbnail.me-1 { margin-right: 0.2rem !important; }
+</style>
 
 <form method="get" class="row g-2 mb-4">
   <div class="col-md-3">
@@ -119,44 +135,20 @@
       <td>
         {% set doc_url = file_url(m[12]) %}
         {% if doc_url %}
-          {% if m[12]|is_image %}
-            <a href="{{ doc_url }}" target="_blank" title="Documento da Moto">
-              <img src="{{ doc_url }}" alt="Documento" class="img-thumbnail me-1" style="height:48px; width:auto;">
-            </a>
-          {% else %}
-            <a href="{{ doc_url }}" target="_blank" class="btn btn-sm btn-outline-info">Doc</a>
-          {% endif %}
+          <a href="{{ doc_url }}" target="_blank" class="btn btn-sm btn-outline-info">Doc</a>
         {% endif %}
         {% set documento_fornecedor_url = file_url(m[13]) %}
         {% if documento_fornecedor_url %}
-          {% if m[13]|is_image %}
-            <a href="{{ documento_fornecedor_url }}" target="_blank" title="Documento do Fornecedor">
-              <img src="{{ documento_fornecedor_url }}" alt="Documento do Fornecedor" class="img-thumbnail me-1" style="height:48px; width:auto;">
-            </a>
-          {% else %}
-            <a href="{{ documento_fornecedor_url }}" target="_blank" class="btn btn-sm btn-outline-info">Doc Fornecedor</a>
-          {% endif %}
+          <a href="{{ documento_fornecedor_url }}" target="_blank" class="btn btn-sm btn-outline-info">Doc Fornecedor</a>
         {% endif %}
         {% set resid_url = file_url(m[14]) %}
         {% if resid_url %}
-          {% if m[14]|is_image %}
-            <a href="{{ resid_url }}" target="_blank" title="Comprovante de Residência">
-              <img src="{{ resid_url }}" alt="Residência" class="img-thumbnail me-1" style="height:48px; width:auto;">
-            </a>
-          {% else %}
-            <a href="{{ resid_url }}" target="_blank" class="btn btn-sm btn-outline-info">Resid.</a>
-          {% endif %}
+          <a href="{{ resid_url }}" target="_blank" class="btn btn-sm btn-outline-info">Resid.</a>
         {% endif %}
-        {# CNH da última venda, se houver #}
-        {% if anexos_venda and anexos_venda.get(m[0]) and anexos_venda.get(m[0]).cnh %}
-          {% set cnh_link = anexos_venda.get(m[0]).cnh %}
-          {% if cnh_link|is_image %}
-            <a href="{{ cnh_link }}" target="_blank" title="CNH">
-              <img src="{{ cnh_link }}" alt="CNH" class="img-thumbnail me-1" style="height:48px; width:auto;">
-            </a>
-          {% else %}
-            <a href="{{ cnh_link }}" target="_blank" class="btn btn-sm btn-outline-secondary">CNH</a>
-          {% endif %}
+        {# CNH da última venda, se houver - sempre como botão #}
+        {% if anexos_venda and anexos_venda.get(m[0]) and anexos_venda.get(m[0])['cnh'] %}
+          {% set cnh_link = anexos_venda.get(m[0])['cnh'] %}
+          <a href="{{ cnh_link }}" target="_blank" class="btn btn-sm btn-outline-secondary">CNH</a>
         {% endif %}
         {% if procuracao_urls and procuracao_urls.get(m[0]) %}
           <a href="{{ procuracao_urls.get(m[0]) }}" target="_blank" class="btn btn-sm btn-outline-secondary">Procuração</a>
@@ -194,6 +186,10 @@
           {% endif %}
           {% if procuracao_urls and procuracao_urls.get(m[0]) %}
             <span data-url-procuracao="{{ procuracao_urls.get(m[0]) }}"></span>
+          {% endif %}
+          {# Incluir CNH na fila de impressão, se existir #}
+          {% if anexos_venda and anexos_venda.get(m[0]) and anexos_venda.get(m[0])['cnh'] %}
+            <span data-url-doc="{{ anexos_venda.get(m[0])['cnh'] }}"></span>
           {% endif %}
         </div>
       </td>
