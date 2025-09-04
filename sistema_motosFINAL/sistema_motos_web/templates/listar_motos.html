@@ -5,7 +5,7 @@
 <style>
   /* Compactar a tabela desta página */
   .table.table-sm td, .table.table-sm th {
-    padding: 0.2rem 0.35rem; /* menor que o padrão do .table-sm */
+    padding: 0.35rem 0.5rem; /* um pouco maior para evitar sobreposição */
   }
   /* Miniaturas um pouco menores para reduzir a altura da linha */
   .table.table-sm img.img-thumbnail {
@@ -17,6 +17,13 @@
   }
   /* Diminuir leve espaçamento horizontal entre itens visuais */
   .table.table-sm .img-thumbnail.me-1 { margin-right: 0.2rem !important; }
+  /* Garantir que os botões de documentos nunca se sobreponham */
+  .docs-td .docs-wrap .btn {
+    display: block;           /* um por linha */
+    width: 100%;              /* ocupa a largura da célula */
+    white-space: normal;      /* permite quebra dentro do texto do botão */
+    text-align: left;         /* leitura melhor quando largo */
+  }
 </style>
 
 <form method="get" class="row g-2 mb-4">
@@ -132,27 +139,29 @@
           —
         {% endif %}
       </td>
-      <td>
-        {% set doc_url = file_url(m[12]) %}
-        {% if doc_url %}
-          <a href="{{ doc_url }}" target="_blank" class="btn btn-sm btn-outline-info">Doc</a>
-        {% endif %}
-        {% set documento_fornecedor_url = file_url(m[13]) %}
-        {% if documento_fornecedor_url %}
-          <a href="{{ documento_fornecedor_url }}" target="_blank" class="btn btn-sm btn-outline-info">Doc Fornecedor</a>
-        {% endif %}
-        {% set resid_url = file_url(m[14]) %}
-        {% if resid_url %}
-          <a href="{{ resid_url }}" target="_blank" class="btn btn-sm btn-outline-info">Doc Extra</a>
-        {% endif %}
-        {# CNH da última venda, se houver - sempre como botão #}
-        {% if anexos_venda and anexos_venda.get(m[0]) and anexos_venda.get(m[0])['cnh'] %}
-          {% set cnh_link = anexos_venda.get(m[0])['cnh'] %}
-          <a href="{{ cnh_link }}" target="_blank" class="btn btn-sm btn-outline-secondary">CNH</a>
-        {% endif %}
-        {% if procuracao_urls and procuracao_urls.get(m[0]) %}
-          <a href="{{ procuracao_urls.get(m[0]) }}" target="_blank" class="btn btn-sm btn-outline-secondary">Procuração</a>
-        {% endif %}
+      <td class="docs-td" style="vertical-align: top;">
+        <div class="docs-wrap d-flex flex-column" style="gap: 4px;">
+          {% set doc_url = file_url(m[12]) %}
+          {% if doc_url %}
+            <a href="{{ doc_url }}" target="_blank" class="btn btn-sm btn-outline-info">Doc</a>
+          {% endif %}
+          {% set documento_fornecedor_url = file_url(m[13]) %}
+          {% if documento_fornecedor_url %}
+            <a href="{{ documento_fornecedor_url }}" target="_blank" class="btn btn-sm btn-outline-info">Doc Fornecedor</a>
+          {% endif %}
+          {% set resid_url = file_url(m[14]) %}
+          {% if resid_url %}
+            <a href="{{ resid_url }}" target="_blank" class="btn btn-sm btn-outline-info">Doc Extra</a>
+          {% endif %}
+          {# CNH da última venda, se houver - sempre como botão #}
+          {% if anexos_venda and anexos_venda.get(m[0]) and anexos_venda.get(m[0])['cnh'] %}
+            {% set cnh_link = anexos_venda.get(m[0])['cnh'] %}
+            <a href="{{ cnh_link }}" target="_blank" class="btn btn-sm btn-outline-secondary">CNH</a>
+          {% endif %}
+          {% if procuracao_urls and procuracao_urls.get(m[0]) %}
+            <a href="{{ procuracao_urls.get(m[0]) }}" target="_blank" class="btn btn-sm btn-outline-secondary">Procuração</a>
+          {% endif %}
+        </div>
       </td>
       <td>
         {% set obs = m[25] %}
