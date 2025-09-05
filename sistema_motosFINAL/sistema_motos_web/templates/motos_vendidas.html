@@ -1,0 +1,162 @@
+{% extends "layout_base.html" %}
+{% block titulo %}Motos Vendidas{% endblock %}
+{% block content %}
+<h4>🏁 Motos Vendidas</h4>
+
+<form method="get" class="row g-2 mb-4">
+  <div class="col-md-3">
+    <input type="text" name="marca_modelo" value="{{ filtros.marca_modelo }}" class="form-control" placeholder="🔤 Marca ou Modelo">
+  </div>
+  <div class="col-md-2">
+    <input type="text" name="placa" value="{{ filtros.placa }}" class="form-control" placeholder="📍 Placa">
+  </div>
+  <div class="col-md-2">
+    <input type="text" name="renavam" value="{{ filtros.renavam }}" class="form-control" placeholder="📝 Renavam">
+  </div>
+  <div class="col-md-2">
+    <select name="combustivel" class="form-control">
+      <option value="">⛽ Combustível</option>
+      {% for c in ["Gasolina", "Etanol", "Flex", "Elétrico"] %}
+        <option value="{{ c }}" {% if filtros.combustivel == c %}selected{% endif %}>{{ c }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-2">
+    <input type="number" name="ano_min" value="{{ filtros.ano_min }}" class="form-control" placeholder="📆 Ano mín">
+  </div>
+  <div class="col-md-2">
+    <input type="number" name="ano_max" value="{{ filtros.ano_max }}" class="form-control" placeholder="📆 Ano máx">
+  </div>
+  <div class="col-md-2">
+    <input type="number" step="0.01" name="km_min" value="{{ filtros.km_min }}" class="form-control" placeholder="🛣️ Km mín">
+  </div>
+  <div class="col-md-2">
+    <input type="number" step="0.01" name="km_max" value="{{ filtros.km_max }}" class="form-control" placeholder="🛣️ Km máx">
+  </div>
+  <div class="col-md-2">
+    {% if session.tipo == 'admin' %}
+    <input type="number" step="0.01" name="preco_min" value="{{ filtros.preco_min }}" class="form-control" placeholder="💰 Preço mín">
+    {% endif %}
+  </div>
+  <div class="col-md-2">
+    {% if session.tipo == 'admin' %}
+    <input type="number" step="0.01" name="preco_max" value="{{ filtros.preco_max }}" class="form-control" placeholder="💰 Preço máx">
+    {% endif %}
+  </div>
+  <div class="col-md-2">
+    <button type="submit" class="btn btn-primary w-100">🔎 Filtrar</button>
+  </div>
+</form>
+
+{% if motos %}
+<table class="table table-bordered table-striped table-sm">
+  <thead class="table-dark">
+    <tr>
+      <th>ID</th><th>Marca</th><th>Modelo</th><th>Ano</th><th>Cor</th>
+      <th>Km</th>
+      {% if session.tipo == 'admin' %}
+        <th>Preço cadastrado</th><th>Vendido por</th><th>Lucro</th>
+      {% else %}
+        <th>Preço</th>
+      {% endif %}
+      <th>Placa</th><th>Combustível</th><th>Status</th><th>Foto</th><th>Documentos</th><th>Documentos Venda</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for m in motos %}
+    {% set st = (m[9] or '')|lower %}
+    <tr>
+      <td>{{ m[0] }}</td><td>{{ m[1] }}</td><td>{{ m[2] }}</td><td>{{ m[3] }}</td><td>{{ m[4] }}</td>
+      <td>{{ m[5]|br_km }}</td>
+      {% if session.tipo == 'admin' %}
+        <td>{{ m[6]|br_moeda }}</td>
+        <td>
+          {% set pv = sale_prices.get(m[0]) if sale_prices else None %}
+          {% if pv is not none %}
+            {{ pv|br_moeda }}
+          {% else %}
+            —
+          {% endif %}
+        </td>
+        <td>
+          {% if pv is not none %}
+            {% set lucro = pv - (m[6]|float) %}
+            {{ lucro|br_moeda }}
+          {% else %}
+            —
+          {% endif %}
+        </td>
+      {% else %}
+        <td>—</td>
+      {% endif %}
+      <td>{{ m[7] }}</td>
+      <td>{{ m[8] }}</td>
+      <td><span style="color: red; font-weight: bold;">Vendida</span></td>
+      <td>
+        {% if foto_urls and (m[0] in foto_urls) %}
+          <a href="{{ foto_urls[m[0]] }}" target="_blank" title="Foto da Moto">
+            <img src="{{ foto_urls[m[0]] }}" alt="Foto da Moto" class="img-thumbnail me-1" style="height:48px; width:auto;">
+          </a>
+        {% else %}
+          —
+        {% endif %}
+      </td>
+      <td class="docs-td" style="vertical-align: top;">
+        <div class="btn-group">
+          <button type="button" class="btn btn-sm btn-outline-info dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+            📎 Documentos
+          </button>
+          <ul class="dropdown-menu">
+            {% set doc_url = file_url(m[12]) %}
+            {% if doc_url %}
+              <li><a class="dropdown-item" href="{{ doc_url }}" target="_blank">📄 Documento Moto</a></li>
+            {% endif %}
+            {% set documento_fornecedor_url = file_url(m[13]) %}
+            {% if documento_fornecedor_url %}
+              <li><a class="dropdown-item" href="{{ documento_fornecedor_url }}" target="_blank">🏷 Fornecedor</a></li>
+            {% endif %}
+            {% set resid_url = file_url(m[14]) %}
+            {% if resid_url %}
+              <li><a class="dropdown-item" href="{{ resid_url }}" target="_blank">🏠 Comprovante de Residência</a></li>
+            {% endif %}
+            {% if procuracao_urls and procuracao_urls.get(m[0]) %}
+              <li><a class="dropdown-item" href="{{ procuracao_urls.get(m[0]) }}" target="_blank">📝 Procuração</a></li>
+            {% endif %}
+            {% if not (doc_url or documento_fornecedor_url or resid_url or (procuracao_urls and procuracao_urls.get(m[0])) or (anexos_venda and anexos_venda.get(m[0]) and anexos_venda.get(m[0])['cnh'])) %}
+              <li><span class="dropdown-item text-muted">Sem documentos</span></li>
+            {% endif %}
+          </ul>
+        </div>
+      </td>
+      <td class="docs-td" style="vertical-align: top;">
+        {% set venda_docs = anexos_venda.get(m[0]) if anexos_venda else None %}
+        {% if venda_docs and (venda_docs['cnh'] or venda_docs['garantia'] or venda_docs['endereco']) %}
+          <div class="btn-group">
+            <button type="button" class="btn btn-sm btn-outline-info dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+              📎 Documentos Venda
+            </button>
+            <ul class="dropdown-menu">
+              {% if venda_docs['cnh'] %}
+                <li><a class="dropdown-item" href="{{ venda_docs['cnh'] }}" target="_blank">🪪 CNH</a></li>
+              {% endif %}
+              {% if venda_docs['garantia'] %}
+                <li><a class="dropdown-item" href="{{ venda_docs['garantia'] }}" target="_blank">📋 Garantia</a></li>
+              {% endif %}
+              {% if venda_docs['endereco'] %}
+                <li><a class="dropdown-item" href="{{ venda_docs['endereco'] }}" target="_blank">🏠 Endereço</a></li>
+              {% endif %}
+            </ul>
+          </div>
+        {% else %}
+          —
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+  <div class="alert alert-info">Nenhuma moto vendida encontrada com os filtros aplicados.</div>
+{% endif %}
+
+{% endblock %}

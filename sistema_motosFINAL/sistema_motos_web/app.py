@@ -371,6 +371,9 @@ def listar_motos():
         "preco_max": request.args.get("preco_max", ""),
         "status": request.args.get("status", "")
     }
+    # Atualização: por padrão, mostrar apenas motos disponíveis na listagem geral
+    if not filtros["status"]:
+        filtros["status"] = "disponível"
     lista = database.filtrar_motos_completo(filtros)
     # Buscar preço de venda (preco_final) mais recente por moto
     sale_prices = {}
@@ -449,6 +452,97 @@ def listar_motos():
         anexos_venda=anexos_venda if 'anexos_venda' in locals() else {},
     )
 
+@app.route("/motos_vendidas")
+def motos_vendidas():
+    if "usuario" not in session:
+        return redirect("/")
+    # Filtra apenas motos vendidas
+    filtros = {
+        "marca_modelo": request.args.get("marca_modelo", ""),
+        "placa": request.args.get("placa", ""),
+        "renavam": request.args.get("renavam", ""),
+        "combustivel": request.args.get("combustivel", ""),
+        "ano_min": request.args.get("ano_min", ""),
+        "ano_max": request.args.get("ano_max", ""),
+        "km_min": request.args.get("km_min", ""),
+        "km_max": request.args.get("km_max", ""),
+        "preco_min": request.args.get("preco_min", ""),
+        "preco_max": request.args.get("preco_max", ""),
+        "status": "vendida",
+    }
+    lista = database.filtrar_motos_completo(filtros)
+    # Buscar preço de venda (preco_final) mais recente por moto e anexos (CNH, Garantia assinada, Endereço)
+    sale_prices = {}
+    anexos_venda = {}
+    try:
+        conn = database.get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            SELECT v.moto_id, v.preco_final
+            FROM vendas v
+            INNER JOIN (
+                SELECT moto_id, MAX(id) AS max_id
+                FROM vendas
+                GROUP BY moto_id
+            ) ult ON ult.moto_id = v.moto_id AND ult.max_id = v.id
+            WHERE v.preco_final IS NOT NULL
+            """
+        )
+        for moto_id, preco_final in cursor.fetchall():
+            sale_prices[moto_id] = float(preco_final)
+        cursor.execute(
+            """
+            SELECT v.moto_id, v.cnh_path, v.garantia_path, v.endereco_path
+            FROM vendas v
+            INNER JOIN (
+                SELECT moto_id, MAX(id) AS max_id
+                FROM vendas
+                GROUP BY moto_id
+            ) ult ON ult.moto_id = v.moto_id AND ult.max_id = v.id
+            WHERE v.cnh_path IS NOT NULL OR v.garantia_path IS NOT NULL OR v.endereco_path IS NOT NULL
+            """
+        )
+        for moto_id, cnh_p, gar_p, end_p in cursor.fetchall():
+            anexos_venda[moto_id] = {
+                'cnh': _file_url(cnh_p) if cnh_p else None,
+                'garantia': _file_url(gar_p) if gar_p else None,
+                'endereco': _file_url(end_p) if end_p else None,
+            }
+        conn.close()
+    except Exception as e:
+        print(f"Aviso: falha ao carregar dados de vendas para motos vendidas: {e}")
+
+    # Mapear links de Procuração e Foto por moto (Garantia NÃO deve aparecer na listagem)
+    procuracao_urls = {}
+    foto_urls = {}
+    try:
+        base_static = os.path.join(os.path.dirname(database.__file__), "static")
+        for row in lista:
+            moto_id = row[0]
+            # Sempre usar rota dinâmica para garantir dados atualizados
+            try:
+                procuracao_urls[moto_id] = url_for('download_procuracao_moto', moto_id=moto_id)
+            except Exception:
+                pass
+            # Foto: procurar por extensões conhecidas
+            for ext in ['.jpg', '.jpeg', '.png', '.gif', '.webp']:
+                p = os.path.join(app.config['UPLOAD_FOLDER'], f"foto_moto_{moto_id}{ext}")
+                if os.path.exists(p):
+                    foto_urls[moto_id] = url_for('static', filename=f"uploads/{os.path.basename(p)}")
+                    break
+    except Exception:
+        pass
+
+    return render_template(
+        "motos_vendidas.html",
+        motos=lista,
+        filtros=filtros,
+        procuracao_urls=procuracao_urls,
+        foto_urls=foto_urls,
+        sale_prices=sale_prices,
+        anexos_venda=anexos_venda,
+    )
 @app.route("/editar_moto/<int:id>", methods=["GET", "POST"])
 def editar_moto(id):
     if "usuario" not in session or session["tipo"] != "admin":
