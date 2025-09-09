@@ -2,6 +2,18 @@
 {% block titulo %}Motos Vendidas{% endblock %}
 {% block content %}
 <h4>🏁 Motos Vendidas</h4>
+<style>
+  /* Destacar motos consignadas (vermelho claro) na listagem de vendidas se aparecerem */
+  tr.consignado-row { background-color: #ffe5e5; }
+  .table.table-sm img.img-thumbnail { height: 40px !important; }
+  td.acoes-td { min-width: 140px; }
+  .acoes-wrap { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .acoes-wrap .btn { padding: 0.12rem 0.4rem; line-height: 1.1; white-space: nowrap; }
+  .docs-td .btn { border-radius: 10px; }
+  .docs-td .dropdown-menu { min-width: 220px; }
+  td.docs-td { min-width: 220px; }
+  .table.table-sm td, .table.table-sm th { padding: 0.45rem 0.6rem; }
+</style>
 
 <form method="get" class="row g-2 mb-4">
   <div class="col-md-3">
@@ -59,13 +71,13 @@
       {% else %}
         <th>Preço</th>
       {% endif %}
-      <th>Placa</th><th>Combustível</th><th>Status</th><th>Foto</th><th>Documentos</th><th>Documentos Venda</th>
+      <th>Placa</th><th>Combustível</th><th>Status</th><th>Foto</th><th>Documentos</th><th>Documentos Venda</th><th>Ações</th>
     </tr>
   </thead>
   <tbody>
     {% for m in motos %}
     {% set st = (m[9] or '')|lower %}
-    <tr>
+    <tr class="{% if st == 'consignado' %}consignado-row{% endif %}">
       <td>{{ m[0] }}</td><td>{{ m[1] }}</td><td>{{ m[2] }}</td><td>{{ m[3] }}</td><td>{{ m[4] }}</td>
       <td>{{ m[5]|br_km }}</td>
       {% if session.tipo == 'admin' %}
@@ -91,7 +103,15 @@
       {% endif %}
       <td>{{ m[7] }}</td>
       <td>{{ m[8] }}</td>
-      <td><span style="color: red; font-weight: bold;">Vendida</span></td>
+      <td>
+        {% if st == 'vendida' %}
+          <span style="color: red; font-weight: bold;">Vendida</span>
+        {% elif st == 'consignado' %}
+          <span style="color: red; font-weight: bold;">Consignado</span>
+        {% else %}
+          <span>{{ m[9]|capitalize }}</span>
+        {% endif %}
+      </td>
       <td>
         {% if foto_urls and (m[0] in foto_urls) %}
           <a href="{{ foto_urls[m[0]] }}" target="_blank" title="Foto da Moto">
@@ -146,6 +166,15 @@
                 <li><a class="dropdown-item" href="{{ venda_docs['endereco'] }}" target="_blank">🏠 Endereço</a></li>
               {% endif %}
             </ul>
+          </div>
+        {% else %}
+          —
+        {% endif %}
+      </td>
+      <td class="acoes-td">
+        {% if session.tipo == 'admin' %}
+          <div class="acoes-wrap">
+            <a class="btn btn-sm btn-outline-secondary" href="/editar_moto/{{ m[0] }}">✏️ Editar</a>
           </div>
         {% else %}
           —

@@ -775,6 +775,46 @@ def buscar_moto(id):
     conn.close()
     return moto
 
+def existe_moto_com_placa(placa: str, excluir_id: int | None = None) -> bool:
+    """Retorna True se já existe uma moto com a mesma placa (normalizada) diferente de excluir_id.
+
+    A normalização remove hífens, espaços e aplica UPPER para evitar duplicidades por formatação.
+    Placas vazias não são consideradas para unicidade (retorna False).
+    """
+    try:
+        if not placa or not str(placa).strip():
+            return False
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        if excluir_id is None:
+            cursor.execute(
+                """
+                SELECT id FROM motos
+                WHERE REPLACE(REPLACE(UPPER(placa), '-', ''), ' ', '') = REPLACE(REPLACE(UPPER(%s), '-', ''), ' ', '')
+                LIMIT 1
+                """,
+                (placa,)
+            )
+        else:
+            cursor.execute(
+                """
+                SELECT id FROM motos
+                WHERE REPLACE(REPLACE(UPPER(placa), '-', ''), ' ', '') = REPLACE(REPLACE(UPPER(%s), '-', ''), ' ', '')
+                  AND id <> %s
+                LIMIT 1
+                """,
+                (placa, excluir_id)
+            )
+        row = cursor.fetchone()
+        conn.close()
+        return bool(row)
+    except Exception:
+        try:
+            conn.close()
+        except Exception:
+            pass
+        return False
+
 def atualizar_moto(id, dados):
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -886,8 +926,18 @@ def filtrar_motos_completo(filtros):
             query += " AND status = %s"
             params.append(filtros["status"])
 
-    # Ordenar por marca e modelo para organizar a listagem
-    query += " ORDER BY marca ASC, modelo ASC"
+    # Deduplicar por placa (opcional): mantém apenas o registro mais recente (maior id) por placa
+    if filtros.get("dedup_placa"):
+        # Normaliza placa removendo hífens e espaços e usando UPPER para evitar duplicidades por formatação
+        query += (
+            " AND id = ("
+            "   SELECT MAX(m2.id) FROM motos m2"
+            "   WHERE REPLACE(REPLACE(UPPER(m2.placa), '-', ''), ' ', '') = REPLACE(REPLACE(UPPER(motos.placa), '-', ''), ' ', '')"
+            " )"
+        )
+
+    # Ordenar por ID crescente para facilitar leitura e evitar confusão visual
+    query += " ORDER BY id ASC"
     cursor.execute(query, params)
     resultado = cursor.fetchall()
     conn.close()

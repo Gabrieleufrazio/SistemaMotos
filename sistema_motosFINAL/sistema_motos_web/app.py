@@ -312,6 +312,14 @@ def cadastro_moto():
             "comprovante_residencia": None
         }
 
+        # Prevenir duplicidade por PLACA (normalizada)
+        try:
+            if database.existe_moto_com_placa(dados["placa"]):
+                flash('Já existe uma moto cadastrada com esta placa. Verifique antes de continuar.', 'danger')
+                return redirect('/cadastro_moto')
+        except Exception:
+            pass
+
         # Processar uploads de documentos
         for campo_form in ['doc_moto', 'documento_fornecedor', 'documento_extra']:
             file = request.files.get(campo_form)
@@ -369,7 +377,8 @@ def listar_motos():
         "km_max": request.args.get("km_max", ""),
         "preco_min": request.args.get("preco_min", ""),
         "preco_max": request.args.get("preco_max", ""),
-        "status": request.args.get("status", "")
+        "status": request.args.get("status", ""),
+        "dedup_placa": True,
     }
     # Atualização: por padrão, mostrar apenas motos disponíveis na listagem geral
     if not filtros["status"]:
@@ -469,6 +478,7 @@ def motos_vendidas():
         "preco_min": request.args.get("preco_min", ""),
         "preco_max": request.args.get("preco_max", ""),
         "status": "vendida",
+        "dedup_placa": True,
     }
     lista = database.filtrar_motos_completo(filtros)
     # Buscar preço de venda (preco_final) mais recente por moto e anexos (CNH, Garantia assinada, Endereço)
@@ -592,6 +602,14 @@ def editar_moto(id):
             # Observações: quando em branco, salvar como string vazia (não None)
             "observacoes": (request.form.get("observacoes") or "").strip(),
         }
+
+        # Prevenir duplicidade de placa ao editar (ignora o próprio ID)
+        try:
+            if database.existe_moto_com_placa(dados["placa"], excluir_id=id):
+                flash('Já existe outra moto com esta placa. Alteração não aplicada.', 'danger')
+                return redirect(f"/editar_moto/{id}")
+        except Exception:
+            pass
 
         # Processar uploads de documentos, atualizando somente se um novo arquivo for enviado
         for campo_form in ['doc_moto', 'documento_fornecedor', 'documento_extra']:
