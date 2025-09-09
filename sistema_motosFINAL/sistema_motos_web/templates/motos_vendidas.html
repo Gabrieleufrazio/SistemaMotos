@@ -13,6 +13,9 @@
   .docs-td .dropdown-menu { min-width: 220px; }
   td.docs-td { min-width: 220px; }
   .table.table-sm td, .table.table-sm th { padding: 0.45rem 0.6rem; }
+  /* Impedir que dropdown seja cortado pelo overflow da tabela */
+  .table { overflow: visible !important; }
+  .dropdown-menu { z-index: 2000; }
 </style>
 
 <form method="get" class="row g-2 mb-4">
@@ -122,7 +125,7 @@
         {% endif %}
       </td>
       <td class="docs-td" style="vertical-align: top;">
-        <div class="btn-group">
+        <div class="btn-group dropdown position-static">
           <button type="button" class="btn btn-sm btn-outline-info dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
             📎 Documentos
           </button>
@@ -151,7 +154,7 @@
       <td class="docs-td" style="vertical-align: top;">
         {% set venda_docs = anexos_venda.get(m[0]) if anexos_venda else None %}
         {% if venda_docs and (venda_docs['cnh'] or venda_docs['garantia'] or venda_docs['endereco']) %}
-          <div class="btn-group">
+          <div class="btn-group dropdown position-static">
             <button type="button" class="btn btn-sm btn-outline-info dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
               📎 Documentos Venda
             </button>

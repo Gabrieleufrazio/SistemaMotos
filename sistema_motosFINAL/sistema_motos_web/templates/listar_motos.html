@@ -48,6 +48,9 @@
   td.acoes-td { min-width: 210px; }
   .acoes-wrap { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
   .acoes-wrap .btn { padding: 0.12rem 0.4rem; line-height: 1.1; white-space: nowrap; }
+  /* Impedir que dropdown seja cortado pelo overflow global da tabela do layout_base */
+  .table { overflow: visible !important; }
+  .dropdown-menu { z-index: 2000; }
 </style>
 
 <form method="get" class="row g-2 mb-4">
@@ -167,7 +170,7 @@
         {% endif %}
       </td>
       <td class="docs-td" style="vertical-align: top;">
-        <div class="btn-group">
+        <div class="btn-group dropdown position-static">
           <button type="button" class="btn btn-sm btn-outline-info dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
             📎 Documentos
           </button>
@@ -196,7 +199,7 @@
       <td class="docs-td" style="vertical-align: top;">
         {% set venda_docs = anexos_venda.get(m[0]) if anexos_venda else None %}
         {% if venda_docs and (venda_docs['cnh'] or venda_docs['garantia'] or venda_docs['endereco']) %}
-          <div class="btn-group">
+          <div class="btn-group dropdown position-static">
             <button type="button" class="btn btn-sm btn-outline-info dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
               📎 Documentos Venda
             </button>
