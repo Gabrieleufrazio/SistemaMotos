@@ -51,6 +51,8 @@
   /* Impedir que dropdown seja cortado pelo overflow global da tabela do layout_base */
   .table { overflow: visible !important; }
   .dropdown-menu { z-index: 2000; }
+  /* Cabeçalho fixo durante a rolagem da página */
+  table.table thead th { position: sticky; top: 0; z-index: 3; background: #212529; color: #fff; }
 </style>
 
 <form method="get" class="row g-2 mb-4">
@@ -110,7 +112,7 @@
 <table class="table table-bordered table-striped table-sm">
   <thead class="table-dark">
     <tr>
-      <th>ID</th><th>Marca</th><th>Modelo</th><th>Ano</th><th>Cor</th>
+      <th>#</th><th>ID</th><th>Marca</th><th>Modelo</th><th>Ano</th><th>Cor</th>
       <th>Km</th>
       {% if session.tipo == 'admin' %}
         <th>Preço cadastrado</th><th>Vendido por</th><th>Lucro</th>
@@ -124,7 +126,7 @@
     {% for m in motos %}
     {% set st = (m[9] or '')|lower %}
     <tr class="{% if st == 'consignado' %}consignado-row{% endif %}">
-      <td>{{ m[0] }}</td><td>{{ m[1] }}</td><td>{{ m[2] }}</td><td>{{ m[3] }}</td><td>{{ m[4] }}</td>
+      <td>{{ loop.index }}</td><td>{{ m[0] }}</td><td>{{ m[1] }}</td><td>{{ m[2] }}</td><td>{{ m[3] }}</td><td>{{ m[4] }}</td>
       <td>{{ m[5]|br_km }}</td>
       {% if session.tipo == 'admin' %}
         <td>{{ m[6]|br_moeda }}</td>
