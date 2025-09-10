@@ -973,6 +973,43 @@ def inserir_categoria_financeira():
     
     return redirect('/controle_financeiro')
 
+@app.route("/editar_item_financeiro/<tipo>/<int:item_id>", methods=['POST'])
+def editar_item_financeiro(tipo, item_id):
+    if "usuario" not in session or session["tipo"] != "admin":
+        return redirect("/")
+    try:
+        categoria = request.form.get('categoria')
+        data_str = request.form.get('data')  # esperado no formato DD/MM/YYYY
+        valor_str = request.form.get('valor')
+
+        # Normalizar valor "R$ 1.234,56" -> 1234.56
+        valor = None
+        if valor_str is not None and valor_str.strip() != "":
+            try:
+                valor = float(valor_str.replace('R$', '').replace(' ', '').replace('.', '').replace(',', '.'))
+            except Exception:
+                valor = None
+
+        # Data: aceitar já em DD/MM/YYYY; se vier yyyy-mm-dd (de input date), converter
+        if data_str and '-' in data_str and '/' not in data_str:
+            try:
+                from datetime import datetime
+                data_str = datetime.strptime(data_str, '%Y-%m-%d').strftime('%d/%m/%Y')
+            except Exception:
+                pass
+
+        if tipo == 'receita':
+            database.atualizar_receita_financeira(item_id, data=data_str, valor=valor, categoria=categoria)
+            flash('Receita atualizada com sucesso!', 'success')
+        elif tipo == 'gasto':
+            database.atualizar_gasto_financeiro(item_id, categoria=categoria, data=data_str, valor=valor)
+            flash('Gasto atualizado com sucesso!', 'success')
+        else:
+            flash('Tipo inválido para edição.', 'danger')
+    except Exception as e:
+        flash(f'Erro ao atualizar item: {e}', 'danger')
+    return redirect('/controle_financeiro')
+
 @app.route("/inserir_receita_financeira", methods=['POST'])
 def inserir_receita_financeira():
     if "usuario" not in session or session["tipo"] != "admin":

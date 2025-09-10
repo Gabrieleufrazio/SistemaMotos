@@ -180,6 +180,7 @@
         {% if session.tipo == 'admin' %}
           <div class="acoes-wrap">
             <a class="btn btn-sm btn-outline-secondary" href="/editar_moto/{{ m[0] }}">✏️ Editar</a>
+            <a class="btn btn-sm btn-outline-danger" href="/excluir_moto/{{ m[0] }}" onclick="return confirm('Confirma exclusão desta moto? Esta ação não pode ser desfeita.');">🗑️ Excluir</a>
           </div>
         {% else %}
           —

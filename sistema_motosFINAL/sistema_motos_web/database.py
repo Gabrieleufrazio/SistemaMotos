@@ -954,7 +954,8 @@ def excluir_moto(id):
 def get_stats_estoque():
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT COUNT(id), SUM(preco) FROM motos WHERE status = 'disponível'")
+    # Considerar 'disponível', 'disponivel' (sem acento) e 'consignado' como estoque
+    cursor.execute("SELECT COUNT(id), SUM(preco) FROM motos WHERE status IN ('disponível','disponivel','consignado')")
     dados = cursor.fetchone()
     conn.close()
     # Retorna (quantidade, soma) ou (0, 0) se não houver motos
@@ -1486,6 +1487,54 @@ def ver_gastos_financeiros():
     gastos = cursor.fetchall()
     conn.close()
     return gastos
+
+def atualizar_receita_financeira(id_receita, data=None, valor=None, categoria=None):
+    """Atualiza campos da receita. Data deve vir no formato DD/MM/YYYY (compatível com inserção existente)."""
+    if all(v is None or v == "" for v in [data, valor, categoria]):
+        return False
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    sets = []
+    params = []
+    if categoria:
+        sets.append("categoria = %s")
+        params.append(categoria)
+    if data:
+        sets.append("adicionado_em = %s")
+        params.append(data)
+    if valor is not None:
+        sets.append("valor = %s")
+        params.append(valor)
+    query = "UPDATE receitas SET " + ", ".join(sets) + " WHERE id = %s"
+    params.append(id_receita)
+    cursor.execute(query, params)
+    conn.commit()
+    conn.close()
+    return True
+
+def atualizar_gasto_financeiro(id_gasto, categoria=None, data=None, valor=None):
+    """Atualiza campos do gasto. Data deve vir no formato DD/MM/YYYY (compatível com inserção existente)."""
+    if all(v is None or v == "" for v in [categoria, data, valor]):
+        return False
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    sets = []
+    params = []
+    if categoria:
+        sets.append("categoria = %s")
+        params.append(categoria)
+    if data:
+        sets.append("retirado_em = %s")
+        params.append(data)
+    if valor is not None:
+        sets.append("valor = %s")
+        params.append(valor)
+    query = "UPDATE gastos SET " + ", ".join(sets) + " WHERE id = %s"
+    params.append(id_gasto)
+    cursor.execute(query, params)
+    conn.commit()
+    conn.close()
+    return True
 
 def deletar_receita_financeira(id_receita):
     """Deleta receita por ID"""
