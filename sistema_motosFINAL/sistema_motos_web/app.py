@@ -378,11 +378,12 @@ def listar_motos():
         "preco_min": request.args.get("preco_min", ""),
         "preco_max": request.args.get("preco_max", ""),
         "status": request.args.get("status", ""),
-        "dedup_placa": True,
+        # deduplica por placa dentro do mesmo status para permitir exibir 'disponível' e 'consignado' juntos
+        "dedup_por_status": True,
     }
-    # Atualização: por padrão, mostrar apenas motos disponíveis na listagem geral
+    # Quando o usuário deixa Status em branco, mostrar estoque (disponível + consignado)
     if not filtros["status"]:
-        filtros["status"] = "disponível"
+        filtros["estoque_apenas"] = True
     lista = database.filtrar_motos_completo(filtros)
     # Buscar preço de venda (preco_final) mais recente por moto
     sale_prices = {}

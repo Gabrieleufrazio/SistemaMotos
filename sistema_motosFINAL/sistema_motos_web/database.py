@@ -925,9 +925,21 @@ def filtrar_motos_completo(filtros):
         else:
             query += " AND status = %s"
             params.append(filtros["status"])
+    elif filtros.get("estoque_apenas"):
+        # Quando não há status específico, mas queremos apenas itens em estoque (disponíveis + consignado)
+        query += " AND status IN ('disponível','disponivel','consignado')"
 
     # Deduplicar por placa (opcional): mantém apenas o registro mais recente (maior id) por placa
-    if filtros.get("dedup_placa"):
+    if filtros.get("dedup_por_status"):
+        # Deduplica por placa dentro do mesmo status (não elimina itens de outro status da mesma placa)
+        query += (
+            " AND id = ("
+            "   SELECT MAX(m2.id) FROM motos m2"
+            "   WHERE REPLACE(REPLACE(UPPER(m2.placa), '-', ''), ' ', '') = REPLACE(REPLACE(UPPER(motos.placa), '-', ''), ' ', '')"
+            "     AND m2.status = motos.status"
+            " )"
+        )
+    elif filtros.get("dedup_placa"):
         # Normaliza placa removendo hífens e espaços e usando UPPER para evitar duplicidades por formatação
         query += (
             " AND id = ("
