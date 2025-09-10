@@ -931,12 +931,16 @@ def filtrar_motos_completo(filtros):
 
     # Deduplicar por placa (opcional): mantém apenas o registro mais recente (maior id) por placa
     if filtros.get("dedup_por_status"):
-        # Deduplica por placa dentro do mesmo status (não elimina itens de outro status da mesma placa)
+        # Deduplica por placa dentro do mesmo status, mas não remove registros com placa vazia/nula
+        # Normaliza placa removendo hífens e espaços e aplicando UPPER
         query += (
-            " AND id = ("
-            "   SELECT MAX(m2.id) FROM motos m2"
-            "   WHERE REPLACE(REPLACE(UPPER(m2.placa), '-', ''), ' ', '') = REPLACE(REPLACE(UPPER(motos.placa), '-', ''), ' ', '')"
-            "     AND m2.status = motos.status"
+            " AND ("
+            "   REPLACE(REPLACE(UPPER(COALESCE(placa,'')), '-', ''), ' ', '') = ''"
+            "   OR id = ("
+            "       SELECT MAX(m2.id) FROM motos m2"
+            "       WHERE REPLACE(REPLACE(UPPER(COALESCE(m2.placa,'')), '-', ''), ' ', '') = REPLACE(REPLACE(UPPER(COALESCE(motos.placa,'')), '-', ''), ' ', '')"
+            "         AND m2.status = motos.status"
+            "   )"
             " )"
         )
     elif filtros.get("dedup_placa"):
@@ -967,7 +971,23 @@ def get_stats_estoque():
     conn = get_db_connection()
     cursor = conn.cursor()
     # Considerar 'disponível', 'disponivel' (sem acento) e 'consignado' como estoque
-    cursor.execute("SELECT COUNT(id), SUM(preco) FROM motos WHERE status IN ('disponível','disponivel','consignado')")
+    # Usar mesma lógica de deduplicação da listagem: dedup por placa NORMALIZADA dentro do mesmo status,
+    # porém NÃO deduplicar quando a placa estiver vazia/nula (conta todos os registros de placa vazia)
+    cursor.execute(
+        """
+        SELECT COUNT(m.id) AS qtd, SUM(m.preco) AS soma
+        FROM motos m
+        WHERE m.status IN ('disponível','disponivel','consignado')
+          AND (
+              REPLACE(REPLACE(UPPER(COALESCE(m.placa,'')), '-', ''), ' ', '') = ''
+              OR m.id = (
+                    SELECT MAX(m2.id) FROM motos m2
+                    WHERE m2.status = m.status
+                      AND REPLACE(REPLACE(UPPER(COALESCE(m2.placa,'')), '-', ''), ' ', '') = REPLACE(REPLACE(UPPER(COALESCE(m.placa,'')), '-', ''), ' ', '')
+              )
+          )
+        """
+    )
     dados = cursor.fetchone()
     conn.close()
     # Retorna (quantidade, soma) ou (0, 0) se não houver motos
