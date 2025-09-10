@@ -1011,7 +1011,8 @@ def get_stats_vendas_mes():
 def registrar_venda(moto_id, vendedor, data, preco_final=None, cnh_path=None, garantia_path=None, endereco_path=None):
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT id FROM motos WHERE id = %s AND status = 'disponível'", (moto_id,))
+    # Permitir venda quando a moto estiver 'disponível' (com e sem acento) ou 'consignado'
+    cursor.execute("SELECT id FROM motos WHERE id = %s AND status IN ('disponível','disponivel','consignado')", (moto_id,))
     if cursor.fetchone():
         cursor.execute("""
             INSERT INTO vendas (moto_id, vendedor, data, preco_final, cnh_path, garantia_path, endereco_path)
