@@ -254,6 +254,22 @@ def excluir_usuario(usuario_id):
     if not row:
         conn.close()
         return False
+
+def atualizar_garantia_venda(moto_id: int, garantia_path: str) -> bool:
+    """Atualiza o campo garantia_path da venda mais recente (maior id) para a moto informada."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    # Encontrar a última venda desta moto
+    cursor.execute("SELECT id FROM vendas WHERE moto_id = %s ORDER BY id DESC LIMIT 1", (moto_id,))
+    row = cursor.fetchone()
+    if not row:
+        conn.close()
+        return False
+    venda_id = row[0]
+    cursor.execute("UPDATE vendas SET garantia_path = %s WHERE id = %s", (garantia_path, venda_id))
+    conn.commit()
+    conn.close()
+    return True
     cursor.execute("DELETE FROM usuarios WHERE id = %s", (usuario_id,))
     conn.commit()
     conn.close()

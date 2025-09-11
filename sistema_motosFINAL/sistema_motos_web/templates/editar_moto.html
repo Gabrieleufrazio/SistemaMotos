@@ -27,7 +27,13 @@
     </div>
     <div class="col-md-2 mb-3">
       <label>Preço (R$)</label>
-      <input type="text" name="preco" id="preco" value="{{ moto[6] }}" placeholder="Ex: R$ 12.990,50" class="form-control" required>
+      {% if session.tipo == 'admin' %}
+        <input type="text" name="preco" id="preco" value="{{ moto[6] }}" placeholder="Ex: R$ 12.990,50" class="form-control" required>
+      {% else %}
+        <input type="text" value="{{ moto[6]|br_moeda }}" class="form-control" disabled>
+        <input type="hidden" name="preco" value="{{ moto[6] }}">
+        <small class="text-muted">Somente administradores podem alterar o preço.</small>
+      {% endif %}
     </div>
     <div class="col-md-3 mb-3">
       <label>Placa</label>

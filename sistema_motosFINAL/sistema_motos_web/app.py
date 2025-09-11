@@ -974,6 +974,26 @@ def inserir_categoria_financeira():
     
     return redirect('/controle_financeiro')
 
+# Upload de Garantia pós-venda (admin e vendedor)
+@app.route("/upload_garantia/<int:moto_id>", methods=['POST'])
+def upload_garantia(moto_id):
+    if "usuario" not in session or session.get("tipo") not in ("admin", "vendedor"):
+        return redirect("/")
+    file = request.files.get('garantia')
+    if not file or not file.filename:
+        flash('Selecione um arquivo de garantia para enviar.', 'danger')
+        return redirect(request.referrer or '/motos_vendidas')
+    try:
+        saved_name = save_unique(file, field_name='garantia', prefix=f"moto{moto_id}")
+        ok = database.atualizar_garantia_venda(moto_id, saved_name)
+        if ok:
+            flash('Garantia anexada com sucesso!', 'success')
+        else:
+            flash('Não foi possível localizar a venda desta moto para anexar a garantia.', 'danger')
+    except Exception as e:
+        flash(f'Erro ao anexar garantia: {e}', 'danger')
+    return redirect(request.referrer or '/motos_vendidas')
+
 @app.route("/editar_item_financeiro/<tipo>/<int:item_id>", methods=['POST'])
 def editar_item_financeiro(tipo, item_id):
     if "usuario" not in session or session["tipo"] != "admin":

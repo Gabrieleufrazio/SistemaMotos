@@ -73,8 +73,6 @@
       <th>Km</th>
       {% if session.tipo == 'admin' %}
         <th>Preço cadastrado</th><th>Vendido por</th><th>Lucro</th>
-      {% else %}
-        <th>Preço</th>
       {% endif %}
       <th>Placa</th><th>Combustível</th><th>Status</th><th>Foto</th><th>Documentos</th><th>Documentos Venda</th><th>Ações</th>
     </tr>
@@ -103,8 +101,6 @@
             —
           {% endif %}
         </td>
-      {% else %}
-        <td>—</td>
       {% endif %}
       <td>{{ m[7] }}</td>
       <td>{{ m[8] }}</td>
@@ -177,10 +173,13 @@
         {% endif %}
       </td>
       <td class="acoes-td">
-        {% if session.tipo == 'admin' %}
+        {% if session.tipo in ['admin','vendedor'] %}
           <div class="acoes-wrap">
             <a class="btn btn-sm btn-outline-secondary" href="/editar_moto/{{ m[0] }}">✏️ Editar</a>
-            <a class="btn btn-sm btn-outline-danger" href="/excluir_moto/{{ m[0] }}" onclick="return confirm('Confirma exclusão desta moto? Esta ação não pode ser desfeita.');">🗑️ Excluir</a>
+            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalGarantia" data-moto-id="{{ m[0] }}">📎 Anexar Garantia</button>
+            {% if session.tipo == 'admin' %}
+              <a class="btn btn-sm btn-outline-danger" href="/excluir_moto/{{ m[0] }}" onclick="return confirm('Confirma exclusão desta moto? Esta ação não pode ser desfeita.');">🗑️ Excluir</a>
+            {% endif %}
           </div>
         {% else %}
           —
@@ -193,5 +192,43 @@
 {% else %}
   <div class="alert alert-info">Nenhuma moto vendida encontrada com os filtros aplicados.</div>
 {% endif %}
+
+<!-- Modal: Anexar Garantia -->
+<div class="modal fade" id="modalGarantia" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="formGarantia" method="POST" action="#" enctype="multipart/form-data">
+        <div class="modal-header">
+          <h5 class="modal-title">Anexar Garantia</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Arquivo da Garantia (PDF, imagem)</label>
+            <input type="file" class="form-control" name="garantia" accept=".pdf,image/*" required>
+          </div>
+          <div class="text-muted small">O arquivo será vinculado à última venda desta moto.</div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Enviar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  const modalGarantia = document.getElementById('modalGarantia');
+  if (modalGarantia) {
+    modalGarantia.addEventListener('show.bs.modal', function (event) {
+      const button = event.relatedTarget;
+      if (!button) return;
+      const motoId = button.getAttribute('data-moto-id');
+      const form = document.getElementById('formGarantia');
+      form.action = `/upload_garantia/${motoId}`;
+    });
+  }
+</script>
 
 {% endblock %}

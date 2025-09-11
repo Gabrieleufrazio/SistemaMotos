@@ -116,8 +116,6 @@
       <th>Km</th>
       {% if session.tipo == 'admin' %}
         <th>Preço cadastrado</th><th>Vendido por</th><th>Lucro</th>
-      {% else %}
-        <th>Preço</th>
       {% endif %}
       <th>Placa</th><th>Combustível</th><th>Status</th><th>Foto</th><th>Documentos</th><th>Documentos Venda</th><th>Ações</th>
     </tr>
@@ -146,8 +144,6 @@
             —
           {% endif %}
         </td>
-      {% else %}
-        <td>—</td>
       {% endif %}
       <td>{{ m[7] }}</td>
       <td>{{ m[8] }}</td>
