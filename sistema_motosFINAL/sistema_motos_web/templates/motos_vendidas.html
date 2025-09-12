@@ -7,12 +7,12 @@
   tr.consignado-row { background-color: #ffe5e5; }
   .table.table-sm img.img-thumbnail { height: 40px !important; }
   td.acoes-td { min-width: 140px; }
-  .acoes-wrap { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-  .acoes-wrap .btn { padding: 0.12rem 0.4rem; line-height: 1.1; white-space: nowrap; }
+  .acoes-wrap { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+  .acoes-wrap .btn { padding: 0.08rem 0.35rem; line-height: 1.1; white-space: nowrap; }
   .docs-td .btn { border-radius: 10px; }
   .docs-td .dropdown-menu { min-width: 220px; }
-  td.docs-td { min-width: 220px; }
-  .table.table-sm td, .table.table-sm th { padding: 0.45rem 0.6rem; }
+  td.docs-td { min-width: 200px; }
+  .table.table-sm td, .table.table-sm th { padding: 0.32rem 0.5rem; }
   /* Impedir que dropdown seja cortado pelo overflow da tabela */
   .table { overflow: visible !important; }
   .dropdown-menu { z-index: 2000; }
@@ -69,7 +69,7 @@
 <table class="table table-bordered table-striped table-sm">
   <thead class="table-dark">
     <tr>
-      <th>#</th><th>ID</th><th>Marca</th><th>Modelo</th><th>Ano</th><th>Cor</th>
+      <th>#</th><th>Marca</th><th>Modelo</th><th>Ano</th><th>Cor</th>
       <th>Km</th>
       {% if session.tipo == 'admin' %}
         <th>Preço cadastrado</th><th>Vendido por</th><th>Lucro</th>
@@ -81,7 +81,7 @@
     {% for m in motos %}
     {% set st = (m[9] or '')|lower %}
     <tr class="{% if st == 'consignado' %}consignado-row{% endif %}">
-      <td>{{ loop.index }}</td><td>{{ m[0] }}</td><td>{{ m[1] }}</td><td>{{ m[2] }}</td><td>{{ m[3] }}</td><td>{{ m[4] }}</td>
+      <td>{{ loop.index }}</td><td>{{ m[1] }}</td><td>{{ m[2] }}</td><td>{{ m[3] }}</td><td>{{ m[4] }}</td>
       <td>{{ m[5]|br_km }}</td>
       {% if session.tipo == 'admin' %}
         <td>{{ m[6]|br_moeda }}</td>

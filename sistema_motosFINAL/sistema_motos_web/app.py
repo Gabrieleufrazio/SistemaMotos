@@ -768,9 +768,12 @@ def registrar_venda():
         "km_max": request.args.get("km_max", ""),
         "preco_min": request.args.get("preco_min", ""),
         "preco_max": request.args.get("preco_max", ""),
-        "status": "disponível"  # Sempre filtra apenas motos disponíveis
+        # Mostrar motos em estoque (disponível/disponivel + consignado) para poder vender consignadas também
+        "status": "",
+        "estoque_apenas": True,
+        "dedup_por_status": True,
     }
-    # Sempre lista motos disponíveis; aplica filtros adicionais se informados
+    # Lista estoque (disponíveis + consignado); aplica filtros adicionais se informados
     lista_motos = database.filtrar_motos_completo(filtros)
     
     return render_template(
