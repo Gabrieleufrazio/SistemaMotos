@@ -484,24 +484,27 @@ def motos_vendidas():
     lista = database.filtrar_motos_completo(filtros)
     # Buscar preço de venda (preco_final) mais recente por moto e anexos (CNH, Garantia assinada, Endereço)
     sale_prices = {}
+    sale_dates = {}
     anexos_venda = {}
     try:
         conn = database.get_db_connection()
         cursor = conn.cursor()
         cursor.execute(
             """
-            SELECT v.moto_id, v.preco_final
+            SELECT v.moto_id, v.preco_final, v.data
             FROM vendas v
             INNER JOIN (
                 SELECT moto_id, MAX(id) AS max_id
                 FROM vendas
                 GROUP BY moto_id
             ) ult ON ult.moto_id = v.moto_id AND ult.max_id = v.id
-            WHERE v.preco_final IS NOT NULL
             """
         )
-        for moto_id, preco_final in cursor.fetchall():
-            sale_prices[moto_id] = float(preco_final)
+        for moto_id, preco_final, data_venda in cursor.fetchall():
+            if preco_final is not None:
+                sale_prices[moto_id] = float(preco_final)
+            # Guardar data (string como salva no banco)
+            sale_dates[moto_id] = data_venda
         cursor.execute(
             """
             SELECT v.moto_id, v.cnh_path, v.garantia_path, v.endereco_path
@@ -552,6 +555,7 @@ def motos_vendidas():
         procuracao_urls=procuracao_urls,
         foto_urls=foto_urls,
         sale_prices=sale_prices,
+        sale_dates=sale_dates,
         anexos_venda=anexos_venda,
     )
 @app.route("/editar_moto/<int:id>", methods=["GET", "POST"])

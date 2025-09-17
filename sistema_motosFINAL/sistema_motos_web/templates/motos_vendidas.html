@@ -5,13 +5,14 @@
 <style>
   /* Destacar motos consignadas (vermelho claro) na listagem de vendidas se aparecerem */
   tr.consignado-row { background-color: #ffe5e5; }
-  .table.table-sm img.img-thumbnail { height: 40px !important; }
+  .table.table-sm { font-size: 0.92rem; }
+  .table.table-sm img.img-thumbnail { height: 36px !important; }
   td.acoes-td { min-width: 140px; }
   .acoes-wrap { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
   .acoes-wrap .btn { padding: 0.08rem 0.35rem; line-height: 1.1; white-space: nowrap; }
   .docs-td .btn { border-radius: 10px; }
   .docs-td .dropdown-menu { min-width: 220px; }
-  td.docs-td { min-width: 200px; }
+  td.docs-td { min-width: 180px; }
   .table.table-sm td, .table.table-sm th { padding: 0.32rem 0.5rem; }
   /* Impedir que dropdown seja cortado pelo overflow da tabela */
   .table { overflow: visible !important; }
@@ -74,7 +75,7 @@
       {% if session.tipo == 'admin' %}
         <th>Preço cadastrado</th><th>Vendido por</th><th>Lucro</th>
       {% endif %}
-      <th>Placa</th><th>Combustível</th><th>Status</th><th>Foto</th><th>Documentos</th><th>Documentos Venda</th><th>Ações</th>
+      <th>Placa</th><th>Combustível</th><th>Status</th><th>Data</th><th>Foto</th><th>Documentos</th><th>Documentos Venda</th><th>Ações</th>
     </tr>
   </thead>
   <tbody>
@@ -112,6 +113,10 @@
         {% else %}
           <span>{{ m[9]|capitalize }}</span>
         {% endif %}
+      </td>
+      <td>
+        {% set dv = sale_dates.get(m[0]) if sale_dates else None %}
+        {{ dv if dv else '—' }}
       </td>
       <td>
         {% if foto_urls and (m[0] in foto_urls) %}
