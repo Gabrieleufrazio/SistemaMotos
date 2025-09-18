@@ -97,7 +97,7 @@
       {% if session.tipo == 'admin' %}
         <th>Preço cadastrado</th><th>Vendido por</th><th>Lucro</th>
       {% endif %}
-      <th>Placa</th><th>Combustível</th><th>Status</th><th>Data</th><th>Foto</th><th>Documentos</th><th>Documentos Venda</th><th>Ações</th>
+      <th>Placa</th><th>Combustível</th><th>Status</th><th>Data de Saída</th><th>Foto</th><th>Documentos</th><th>Documentos Venda</th><th>Ações</th>
     </tr>
   </thead>
   <tbody>
@@ -268,16 +268,16 @@
       <form id="formEditarData" method="POST" action="/atualizar_data_venda">
         <input type="hidden" name="moto_id" id="motoId">
         <div class="modal-header">
-          <h5 class="modal-title">Editar Data da Venda</h5>
+          <h5 class="modal-title">Editar Data de Saída</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
         </div>
         <div class="modal-body">
           <div class="mb-3">
-            <label for="dataVenda" class="form-label">Data da Venda</label>
+            <label for="dataVenda" class="form-label">Data de Saída</label>
             <input type="date" class="form-control" id="dataVenda" name="data_venda" required>
           </div>
           <div class="mb-3">
-            <label for="horaVenda" class="form-label">Hora da Venda</label>
+            <label for="horaVenda" class="form-label">Hora de Saída</label>
             <input type="time" class="form-control" id="horaVenda" name="hora_venda">
           </div>
         </div>
