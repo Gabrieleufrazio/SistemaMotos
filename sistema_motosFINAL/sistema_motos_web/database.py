@@ -1069,6 +1069,33 @@ def atualizar_venda_campos(venda_id, preco_final=None, cnh_path=None, garantia_p
         conn.commit()
     conn.close()
 
+def atualizar_data_venda_ultima(moto_id: int, data_venda: str) -> bool:
+    """
+    Atualiza o campo 'data' da venda mais recente (maior id) para a moto informada.
+    Espera 'data_venda' no formato ISO 'YYYY-MM-DD'.
+    Retorna True se atualizou, False se não encontrou venda.
+    """
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT id FROM vendas WHERE moto_id = %s ORDER BY id DESC LIMIT 1", (moto_id,))
+        row = cursor.fetchone()
+        if not row:
+            conn.close()
+            return False
+        venda_id = row[0]
+        cursor.execute("UPDATE vendas SET data = %s WHERE id = %s", (data_venda, venda_id))
+        conn.commit()
+        conn.close()
+        return True
+    except Exception:
+        # Em caso de erro, garantir fechamento e retornar False
+        try:
+            conn.close()
+        except Exception:
+            pass
+        return False
+
 # Relatório
 def gerar_relatorio():
     conn = get_db_connection()

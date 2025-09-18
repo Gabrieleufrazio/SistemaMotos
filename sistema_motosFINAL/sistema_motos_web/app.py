@@ -1001,6 +1001,28 @@ def upload_garantia(moto_id):
         flash(f'Erro ao anexar garantia: {e}', 'danger')
     return redirect(request.referrer or '/motos_vendidas')
 
+@app.route("/atualizar_data_venda", methods=['POST'])
+def atualizar_data_venda():
+    if "usuario" not in session or session.get("tipo") not in ("admin", "vendedor"):
+        return redirect("/")
+    try:
+        moto_id_raw = request.form.get('moto_id')
+        data_venda = request.form.get('data_venda')  # esperado como YYYY-MM-DD (input type=date)
+        if not moto_id_raw or not data_venda:
+            flash('Parâmetros inválidos para atualizar data.', 'danger')
+            return redirect(request.referrer or '/motos_vendidas')
+        moto_id = int(moto_id_raw)
+        # Sanitização simples do formato
+        data_venda = data_venda.strip()
+        ok = database.atualizar_data_venda_ultima(moto_id, data_venda)
+        if ok:
+            flash('Data da venda atualizada com sucesso.', 'success')
+        else:
+            flash('Não foi possível atualizar a data (verifique se há venda registrada).', 'warning')
+    except Exception as e:
+        flash(f'Erro ao atualizar data da venda: {e}', 'danger')
+    return redirect(request.referrer or '/motos_vendidas')
+
 @app.route("/editar_item_financeiro/<tipo>/<int:item_id>", methods=['POST'])
 def editar_item_financeiro(tipo, item_id):
     if "usuario" not in session or session["tipo"] != "admin":
