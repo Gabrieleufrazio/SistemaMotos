@@ -1008,12 +1008,16 @@ def atualizar_data_venda():
     try:
         moto_id_raw = request.form.get('moto_id')
         data_venda = request.form.get('data_venda')  # esperado como YYYY-MM-DD (input type=date)
+        hora_venda = request.form.get('hora_venda')  # esperado como HH:MM (input type=time)
         if not moto_id_raw or not data_venda:
             flash('Parâmetros inválidos para atualizar data.', 'danger')
             return redirect(request.referrer or '/motos_vendidas')
         moto_id = int(moto_id_raw)
         # Sanitização simples do formato
         data_venda = data_venda.strip()
+        if hora_venda and hora_venda.strip():
+            # Monta 'YYYY-MM-DD HH:MM'
+            data_venda = f"{data_venda} {hora_venda.strip()[:5]}"
         ok = database.atualizar_data_venda_ultima(moto_id, data_venda)
         if ok:
             flash('Data da venda atualizada com sucesso.', 'success')

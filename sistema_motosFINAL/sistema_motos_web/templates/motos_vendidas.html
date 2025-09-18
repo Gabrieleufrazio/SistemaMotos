@@ -139,9 +139,11 @@
       <td class="data-venda">
         {% set dv = sale_dates.get(m[0]) if sale_dates else None %}
         {% if dv %}
-          {% if '-' in dv %}
-            {% set p = dv.split('-') %}
-            <span class="data-text">{{ p[2] }}/{{ p[1] }}/{{ p[0] }}</span>
+          {% set data_part = dv.split(' ')[0] %}
+          {% set hora_part = (dv.split(' ')[1] if (dv|length>10 and ' ' in dv) else '') %}
+          {% if '-' in data_part %}
+            {% set p = data_part.split('-') %}
+            <span class="data-text">{{ p[2] }}/{{ p[1] }}/{{ p[0] }}{% if hora_part %} {{ hora_part[:5] }}{% endif %}</span>
           {% else %}
             <span class="data-text">{{ dv }}</span>
           {% endif %}
@@ -271,8 +273,12 @@
         </div>
         <div class="modal-body">
           <div class="mb-3">
-            <label for="dataVenda" class="form-label">Nova Data da Venda</label>
+            <label for="dataVenda" class="form-label">Data da Venda</label>
             <input type="date" class="form-control" id="dataVenda" name="data_venda" required>
+          </div>
+          <div class="mb-3">
+            <label for="horaVenda" class="form-label">Hora da Venda</label>
+            <input type="time" class="form-control" id="horaVenda" name="hora_venda">
           </div>
         </div>
         <div class="modal-footer">
@@ -308,17 +314,22 @@
       // Preenche o formulário com os dados atuais
       document.getElementById('motoId').value = motoId;
 
-      // Suporta data em DD/MM/YYYY ou YYYY-MM-DD
-      let iso = '';
-      if (dataAtual.includes('/')) {
-        const [dia, mes, ano] = dataAtual.split('/');
-        iso = `${ano}-${String(mes).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
-      } else if (dataAtual.includes('-')) {
-        // Já está no formato ISO ou semelhante
-        iso = dataAtual.slice(0, 10);
+      // Extrai data e hora (se houver) e normaliza
+      let isoDate = '';
+      let timePart = '';
+      const parts = dataAtual.split(' ');
+      const onlyDate = parts[0] || '';
+      if (parts.length > 1) timePart = parts[1].slice(0,5);
+
+      if (onlyDate.includes('/')) {
+        const [dia, mes, ano] = onlyDate.split('/');
+        isoDate = `${ano}-${String(mes).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
+      } else if (onlyDate.includes('-')) {
+        isoDate = onlyDate.slice(0, 10);
       }
 
-      document.getElementById('dataVenda').value = iso || new Date().toISOString().split('T')[0];
+      document.getElementById('dataVenda').value = isoDate || new Date().toISOString().split('T')[0];
+      document.getElementById('horaVenda').value = timePart || new Date().toTimeString().slice(0,5);
     });
   }
   
