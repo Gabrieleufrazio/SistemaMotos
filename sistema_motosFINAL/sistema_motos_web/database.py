@@ -1530,6 +1530,18 @@ def ver_categorias_financeiras():
     conn.close()
     return categorias
 
+def deletar_categoria_financeira(categoria_id: int) -> bool:
+    """Exclui uma categoria financeira pelo ID.
+    Observação: receitas/gastos existentes não são alterados (armazenam o nome da categoria como texto).
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM categorias_financeiras WHERE id = %s", (categoria_id,))
+    conn.commit()
+    ok = cursor.rowcount > 0
+    conn.close()
+    return ok
+
 def inserir_receita_financeira(categoria, data, valor):
     """Insere nova receita"""
     conn = get_db_connection()

@@ -981,6 +981,20 @@ def inserir_categoria_financeira():
     
     return redirect('/controle_financeiro')
 
+@app.route("/deletar_categoria_financeira/<int:categoria_id>", methods=['POST'])
+def deletar_categoria_financeira(categoria_id):
+    if "usuario" not in session or session["tipo"] != "admin":
+        return redirect("/")
+    try:
+        ok = database.deletar_categoria_financeira(categoria_id)
+        if ok:
+            flash('Categoria excluída com sucesso.', 'success')
+        else:
+            flash('Categoria não encontrada.', 'danger')
+    except Exception as e:
+        flash(f'Erro ao excluir categoria: {e}', 'danger')
+    return redirect('/controle_financeiro')
+
 # Upload de Garantia pós-venda (admin e vendedor)
 @app.route("/upload_garantia/<int:moto_id>", methods=['POST'])
 def upload_garantia(moto_id):
