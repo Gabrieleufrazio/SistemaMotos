@@ -5,15 +5,15 @@
 <style>
   /* Destacar motos consignadas (vermelho claro) na listagem de vendidas se aparecerem */
   tr.consignado-row { background-color: #ffe5e5; }
-  .table.table-sm { font-size: 0.85rem; }
-  .table.table-sm img.img-thumbnail { height: 32px !important; }
-  td.acoes-td { min-width: 140px; }
-  .acoes-wrap { display: flex; flex-wrap: wrap; gap: 3px; align-items: center; }
-  .acoes-wrap .btn { padding: 0.05rem 0.3rem; line-height: 1; font-size: 0.8rem; white-space: nowrap; }
-  .docs-td .btn { border-radius: 8px; font-size: 0.8rem; padding: 0.15rem 0.4rem; }
-  .docs-td .dropdown-menu { min-width: 200px; font-size: 0.85rem; }
-  td.docs-td { min-width: 160px; }
-  .table.table-sm td, .table.table-sm th { padding: 0.2rem 0.4rem; }
+  .table.table-sm { font-size: 0.8rem; line-height: 1.1; }
+  .table.table-sm img.img-thumbnail { height: 28px !important; }
+  td.acoes-td { min-width: 130px; }
+  .acoes-wrap { display: flex; flex-wrap: wrap; gap: 2px; align-items: center; }
+  .acoes-wrap .btn { padding: 0.05rem 0.25rem; line-height: 1; font-size: 0.75rem; white-space: nowrap; }
+  .docs-td .btn { border-radius: 8px; font-size: 0.75rem; padding: 0.12rem 0.35rem; }
+  .docs-td .dropdown-menu { min-width: 200px; font-size: 0.8rem; }
+  td.docs-td { min-width: 150px; }
+  .table.table-sm td, .table.table-sm th { padding: 0.15rem 0.25rem; }
   /* Impedir que dropdown seja cortado pelo overflow da tabela */
   .table { overflow: visible !important; }
   .dropdown-menu { z-index: 2000; }
@@ -111,9 +111,12 @@
         <td>
           {% set pv = sale_prices.get(m[0]) if sale_prices else None %}
           {% if pv is not none %}
-            {{ pv|br_moeda }}
+            <span class="valor-venda">{{ pv|br_moeda }}</span>
           {% else %}
-            —
+            <span class="valor-venda">—</span>
+          {% endif %}
+          {% if session.tipo == 'admin' %}
+            <button type="button" class="btn btn-sm btn-outline-secondary ms-1" data-bs-toggle="modal" data-bs-target="#modalEditarPreco" data-moto-id="{{ m[0] }}" data-preco-atual="{{ pv if pv is not none else '' }}" title="Editar preço de venda">✏️</button>
           {% endif %}
         </td>
         <td>
@@ -290,6 +293,32 @@
   </div>
 </div>
 
+<!-- Modal: Editar Preço da Venda (Admin) -->
+<div class="modal fade" id="modalEditarPreco" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="formEditarPreco" method="POST" action="/atualizar_preco_venda">
+        <input type="hidden" name="moto_id" id="motoIdPreco">
+        <div class="modal-header">
+          <h5 class="modal-title">Editar Preço da Venda</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="precoFinal" class="form-label">Preço Final</label>
+            <input type="text" class="form-control" id="precoFinal" name="preco_final" placeholder="R$ 0,00" required>
+            <div class="form-text">Use vírgula para centavos. Ex.: 1.234,56</div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  </div>
+
 <script>
   // Configuração do modal de garantia
   const modalGarantia = document.getElementById('modalGarantia');
@@ -347,6 +376,41 @@
       });
     }
   });
+
+  // Configuração do modal de edição de preço (admin)
+  const modalEditarPreco = document.getElementById('modalEditarPreco');
+  if (modalEditarPreco) {
+    modalEditarPreco.addEventListener('show.bs.modal', function (event) {
+      const button = event.relatedTarget;
+      const motoId = button.getAttribute('data-moto-id');
+      const precoAtual = button.getAttribute('data-preco-atual') || '';
+      document.getElementById('motoIdPreco').value = motoId;
+      const input = document.getElementById('precoFinal');
+      if (precoAtual) {
+        // Se veio número puro, formatar; se já veio BRL, manter
+        let val = precoAtual;
+        if (!isNaN(parseFloat(precoAtual))) {
+          try {
+            let br = (parseFloat(precoAtual)).toFixed(2).replace('.', ',');
+            br = br.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+            val = 'R$ ' + br;
+          } catch(e) {}
+        }
+        input.value = val.toString().startsWith('R$') ? val : ('R$ ' + val);
+      } else {
+        input.value = '';
+      }
+    });
+    // Máscara simples BRL
+    const precoInput = document.getElementById('precoFinal');
+    precoInput.addEventListener('input', function(e){
+      let value = e.target.value.replace(/\D/g, '');
+      value = (value / 100).toFixed(2);
+      value = value.replace('.', ',');
+      value = value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+      e.target.value = 'R$ ' + value;
+    });
+  }
 </script>
 
 {% endblock %}

@@ -917,19 +917,36 @@ def controle_financeiro():
     # Inicializar categorias padrão se necessário
     database.inicializar_categorias_padrao()
     
-    # Dados para os gráficos
-    valores_bar = database.calcular_valores_financeiros()
-    valores_pizza = database.gastos_por_categoria()
+    # Filtro por mês (input type=month -> YYYY-MM)
+    periodo = request.args.get('periodo', '')
+    if periodo and len(periodo) == 7 and '-' in periodo:
+        receitas = database.ver_receitas_financeiras_filtrado(periodo)
+        gastos = database.ver_gastos_financeiros_filtrado(periodo)
+    else:
+        receitas = database.ver_receitas_financeiras()
+        gastos = database.ver_gastos_financeiros()
+    
+    # Dados para os gráficos a partir das listas selecionadas
+    receita_total = sum(float(r[3]) for r in receitas) if receitas else 0.0
+    gastos_total = sum(float(g[3]) for g in gastos) if gastos else 0.0
+    saldo_total = receita_total - gastos_total
+    valores_bar = [receita_total, gastos_total, saldo_total]
+    
+    # Pizza com gastos por categoria (recalcular daqui)
+    from collections import defaultdict
+    soma_cat = defaultdict(float)
+    for g in gastos:
+        soma_cat[str(g[1])] += float(g[3])
+    categorias_labels = list(soma_cat.keys())
+    categorias_valores = [soma_cat[k] for k in categorias_labels]
+    valores_pizza = [categorias_labels, categorias_valores]
     
     # Calcular percentagem restante
     receita_total, gastos_total, saldo_total = valores_bar
     percentagem = ((receita_total - gastos_total) / receita_total * 100) if receita_total > 0 else 0
     percentagem = max(0, percentagem)
     
-    # Dados da tabela (combinar receitas e gastos)
-    receitas = database.ver_receitas_financeiras()
-    gastos = database.ver_gastos_financeiros()
-    
+    # Dados da tabela (combinar receitas e gastos) - usar listas já filtradas
     dados_tabela = []
     for r in receitas:
         dados_tabela.append({
@@ -962,7 +979,8 @@ def controle_financeiro():
                          valores_pizza=valores_pizza,
                          percentagem=percentagem,
                          dados_tabela=dados_tabela,
-                         categorias=categorias)
+                         categorias=categorias,
+                         periodo=periodo)
 
 @app.route("/inserir_categoria_financeira", methods=['POST'])
 def inserir_categoria_financeira():
@@ -1013,6 +1031,35 @@ def upload_garantia(moto_id):
             flash('Não foi possível localizar a venda desta moto para anexar a garantia.', 'danger')
     except Exception as e:
         flash(f'Erro ao anexar garantia: {e}', 'danger')
+    return redirect(request.referrer or '/motos_vendidas')
+
+@app.route("/atualizar_preco_venda", methods=['POST'])
+def atualizar_preco_venda():
+    if "usuario" not in session or session.get("tipo") != "admin":
+        return redirect("/")
+    try:
+        moto_id_raw = request.form.get('moto_id')
+        preco_str = request.form.get('preco_final')
+        if not moto_id_raw or preco_str is None:
+            flash('Parâmetros inválidos para atualizar preço.', 'danger')
+            return redirect(request.referrer or '/motos_vendidas')
+        moto_id = int(moto_id_raw)
+        # Normalizar valor "R$ 1.234,56" -> 1234.56
+        preco_norm = None
+        try:
+            preco_norm = float(preco_str.replace('R$', '').replace(' ', '').replace('.', '').replace(',', '.'))
+        except Exception:
+            pass
+        if preco_norm is None:
+            flash('Valor inválido. Use o formato 1.234,56.', 'danger')
+            return redirect(request.referrer or '/motos_vendidas')
+        ok = database.atualizar_preco_venda_ultima(moto_id, preco_norm)
+        if ok:
+            flash('Preço de venda atualizado com sucesso.', 'success')
+        else:
+            flash('Não foi possível atualizar o preço (sem venda registrada?).', 'warning')
+    except Exception as e:
+        flash(f'Erro ao atualizar preço de venda: {e}', 'danger')
     return redirect(request.referrer or '/motos_vendidas')
 
 @app.route("/atualizar_data_venda", methods=['POST'])

@@ -40,7 +40,7 @@
         }
         /* Categorias: lista mais curta e compacta */
         .categories-list {
-            max-height: 100px; /* ainda mais curta */
+            max-height: 80px; /* ainda mais curta */
             overflow: auto;
             border: 1px solid #e9ecef;
             border-radius: 8px;
@@ -80,6 +80,20 @@
                 {% endfor %}
             {% endif %}
         {% endwith %}
+
+        <!-- Filtro por mês -->
+        <div class="row mb-3">
+            <div class="col-md-6 mx-auto">
+                <div class="dashboard-card p-3 d-flex align-items-center justify-content-between">
+                    <form class="d-flex align-items-center gap-2" method="get" action="/controle_financeiro">
+                        <label for="periodo" class="form-label m-0">📅 Mês:</label>
+                        <input type="month" id="periodo" name="periodo" class="form-control" style="max-width: 180px;" value="{{ periodo or '' }}">
+                        <button type="submit" class="btn btn-outline-primary">Filtrar</button>
+                        <a href="/controle_financeiro" class="btn btn-outline-secondary">Limpar</a>
+                    </form>
+                </div>
+            </div>
+        </div>
 
         <!-- Dashboard Cards -->
         <div class="row mb-4">
@@ -136,7 +150,9 @@
                   <button type="submit" class="btn btn-primary w-100">Adicionar Categoria</button>
                 </form>
                 <hr class="my-4">
-                <h6 class="text-secondary">Categorias existentes</h6>
+                <h6 class="text-secondary d-flex justify-content-between align-items-center">Categorias existentes
+                  <button type="button" class="btn btn-sm btn-outline-secondary" id="toggleCats" aria-expanded="false">Ver mais</button>
+                </h6>
                 {% if categorias and categorias|length > 0 %}
                   <div class="list-group small categories-list">
                     {% for cat in categorias %}
