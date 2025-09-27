@@ -106,7 +106,19 @@
   <div class="col-md-2">
     <button type="submit" class="btn btn-primary w-100">🔎 Filtrar</button>
   </div>
+  <div class="col-md-2">
+    <input type="month" name="periodo" value="{{ periodo or '' }}" class="form-control" placeholder="📅 Mês (cadastro)">
+  </div>
+  <div class="col-md-2">
+    <a href="/listar_motos" class="btn btn-outline-secondary w-100">Limpar</a>
+  </div>
 </form>
+
+{% if periodo %}
+  <div class="alert alert-info py-2">Cadastradas em {{ periodo }}: <strong>{{ motos|length }}</strong></div>
+{% endif %}
+
+<div class="alert alert-secondary py-2">Total no resultado: <strong>{{ motos|length }}</strong></div>
 
 {% if motos %}
 <table class="table table-bordered table-striped table-sm">

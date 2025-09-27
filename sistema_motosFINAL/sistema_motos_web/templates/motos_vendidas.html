@@ -86,7 +86,17 @@
   <div class="col-md-2">
     <button type="submit" class="btn btn-primary w-100">🔎 Filtrar</button>
   </div>
+  <div class="col-md-2">
+    <input type="month" name="periodo" value="{{ periodo or '' }}" class="form-control" placeholder="📅 Mês (saída)">
+  </div>
+  <div class="col-md-2">
+    <a href="/motos_vendidas" class="btn btn-outline-secondary w-100">Limpar</a>
+  </div>
 </form>
+
+{% if periodo %}
+  <div class="alert alert-info py-2">Vendidas em {{ periodo }}: <strong>{{ motos|length }}</strong></div>
+{% endif %}
 
 {% if motos %}
 <table class="table table-bordered table-striped table-sm">

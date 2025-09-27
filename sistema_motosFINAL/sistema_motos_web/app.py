@@ -385,6 +385,31 @@ def listar_motos():
     if not filtros["status"]:
         filtros["estoque_apenas"] = True
     lista = database.filtrar_motos_completo(filtros)
+    # Filtro por mês de CADASTRO (apenas estoque: não vendidas) opcional: periodo=YYYY-MM
+    periodo = request.args.get('periodo', '').strip()
+    if periodo:
+        def matches_period_estoque(moto_row):
+            # Índices segundo SELECT em database.filtrar_motos_completo
+            # 0:id, 9:status, 15:data_cadastro
+            st = (moto_row[9] or '').lower()
+            if st == 'vendida':
+                return False
+            dc = str(moto_row[15] or '')
+            if not dc:
+                return False
+            try:
+                # data_cadastro pode estar como DD/MM/YYYY
+                if '/' in dc:
+                    partes = dc.split('/')
+                    ym = f"{partes[2]}-{partes[1]}"
+                elif '-' in dc and dc[4] == '-':
+                    ym = dc[:7]
+                else:
+                    return False
+                return ym == periodo
+            except Exception:
+                return False
+        lista = [row for row in lista if matches_period_estoque(row)]
     # Buscar preço de venda (preco_final) mais recente por moto
     sale_prices = {}
     try:
@@ -455,6 +480,7 @@ def listar_motos():
         "listar_motos.html",
         motos=lista,
         filtros=filtros,
+        periodo=periodo,
         exibicao_urls=exibicao_urls,
         procuracao_urls=procuracao_urls,
         foto_urls=foto_urls,
@@ -526,6 +552,27 @@ def motos_vendidas():
         conn.close()
     except Exception as e:
         print(f"Aviso: falha ao carregar dados de vendas para motos vendidas: {e}")
+
+    # Filtro opcional por mês (YYYY-MM) da data de saída
+    periodo = request.args.get('periodo', '').strip()
+    if periodo:
+        def match_period(row):
+            mid = row[0]
+            dv = str(sale_dates.get(mid, '') or '')
+            if not dv:
+                return False
+            try:
+                if '-' in dv and dv[4] == '-':
+                    ym = dv[:7]
+                elif '/' in dv:
+                    partes = dv.split(' ')[0].split('/')
+                    ym = f"{partes[2]}-{partes[1]}"
+                else:
+                    return False
+                return ym == periodo
+            except Exception:
+                return False
+        lista = [row for row in lista if match_period(row)]
 
     # Mapear links de Procuração e Foto por moto (Garantia NÃO deve aparecer na listagem)
     procuracao_urls = {}
