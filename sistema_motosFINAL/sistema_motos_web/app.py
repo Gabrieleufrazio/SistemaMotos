@@ -213,7 +213,7 @@ def download_garantia():
         return redirect("/cadastro_moto")
     return send_file(caminho, as_attachment=True, download_name="GARANTIA.pdf")
 
-@app.route("/download/procuracao")
+@app.route("/download_procuracao")
 def download_procuracao():
     caminho = os.path.join(STATIC_FOLDER_ABS, "PROCURACAO.pdf")
     if not os.path.exists(caminho):
@@ -235,6 +235,22 @@ def download_procuracao_moto(moto_id: int):
     except Exception as e:
         print(f"Erro ao gerar/baixar procuração da moto {moto_id}: {e}")
         return redirect("/listar_motos")
+
+# Gerar Garantia dinâmica por moto (pós-venda)
+@app.route("/gerar_garantia/<int:moto_id>")
+def gerar_garantia_moto(moto_id: int):
+    if "usuario" not in session or session.get("tipo") not in ("admin", "vendedor"):
+        return redirect("/")
+    try:
+        caminho_pdf = database.gerar_pdf_garantia(moto_id)
+        if caminho_pdf and os.path.exists(caminho_pdf):
+            return send_file(caminho_pdf, as_attachment=True, download_name=f"garantia_moto_{moto_id}.pdf")
+        else:
+            flash("Não foi possível gerar a garantia. Verifique os dados da moto e do comprador.", "danger")
+            return redirect(request.referrer or "/motos_vendidas")
+    except Exception as e:
+        flash(f"Erro ao gerar garantia: {e}", "danger")
+        return redirect(request.referrer or "/motos_vendidas")
 
 # LOGIN
 @app.route("/", methods=["GET", "POST"])
@@ -607,7 +623,7 @@ def motos_vendidas():
     )
 @app.route("/editar_moto/<int:id>", methods=["GET", "POST"])
 def editar_moto(id):
-    if "usuario" not in session or session["tipo"] != "admin":
+    if "usuario" not in session or session["tipo"] not in ["admin", "vendedor"]:
         return redirect("/")
     moto = database.buscar_moto(id)
     if not moto:

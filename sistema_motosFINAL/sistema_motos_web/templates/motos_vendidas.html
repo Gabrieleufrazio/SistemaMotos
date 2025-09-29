@@ -222,10 +222,21 @@
               {% if venda_docs['endereco'] %}
                 <li><a class="dropdown-item" href="{{ venda_docs['endereco'] }}" target="_blank">🏠 Endereço</a></li>
               {% endif %}
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="/gerar_garantia/{{ m[0] }}" target="_blank">🧾 Gerar Garantia (PDF)</a></li>
             </ul>
           </div>
         {% else %}
-          —
+          <div class="btn-group dropdown position-static">
+            <button type="button" class="btn btn-sm btn-outline-info dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+              📎 Documentos Venda
+            </button>
+            <ul class="dropdown-menu">
+              <li><span class="dropdown-item text-muted">Sem anexos de venda</span></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="/gerar_garantia/{{ m[0] }}" target="_blank">🧾 Gerar Garantia (PDF)</a></li>
+            </ul>
+          </div>
         {% endif %}
       </td>
       <td class="acoes-td">
