@@ -541,6 +541,13 @@ def gerar_pdf_garantia(moto_id, venda_id=None):
     c.drawString(margem_esq + 260, y, f"CNPJ {vendedor_cnpj}")
     c.save()
 
+    # Retornar o caminho do arquivo gerado, se existir
+    try:
+        if os.path.exists(nome_arquivo):
+            return nome_arquivo
+    except Exception:
+        pass
+    return None
 
 def gerar_pdf_procuracao(moto_id, venda_id=None):
     """
