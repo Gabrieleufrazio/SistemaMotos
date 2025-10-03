@@ -256,6 +256,26 @@
     {% endfor %}
   </tbody>
 </table>
+  {% if session.tipo == 'admin' and lucros_por_mes %}
+    <div class="card mt-3">
+      <div class="card-header">Resumo de Lucros por Mês</div>
+      <div class="card-body p-2">
+        <table class="table table-sm mb-0">
+          <thead>
+            <tr><th>Mês (YYYY-MM)</th><th class="text-end">Lucro Total</th></tr>
+          </thead>
+          <tbody>
+            {% for mes, total in lucros_por_mes.items() %}
+              <tr>
+                <td>{{ mes }}</td>
+                <td class="text-end">{{ total|br_moeda }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  {% endif %}
 {% else %}
   <div class="alert alert-info">Nenhuma moto vendida encontrada com os filtros aplicados.</div>
 {% endif %}

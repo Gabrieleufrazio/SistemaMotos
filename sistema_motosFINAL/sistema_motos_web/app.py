@@ -620,7 +620,49 @@ def motos_vendidas():
         sale_prices=sale_prices,
         sale_dates=sale_dates,
         anexos_venda=anexos_venda,
+        lucros_por_mes=_calcular_lucros_por_mes(lista, sale_prices, sale_dates),
     )
+
+def _calcular_lucros_por_mes(lista_motos, sale_prices, sale_dates):
+    """
+    Calcula lucros por mês (YYYY-MM) com base no preço de venda mais recente (sale_prices)
+    menos o preço cadastrado (coluna 6 da lista) e agrupa pela data da venda em sale_dates.
+    Retorna um dicionário { 'YYYY-MM': total_lucro_float } ordenado por mês.
+    """
+    try:
+        # Agrupar somatórios
+        somas = {}
+        for row in lista_motos:
+            try:
+                moto_id = row[0]
+                preco_base = float(row[6] or 0)
+                pv = sale_prices.get(moto_id)
+                if pv is None:
+                    continue
+                lucro = float(pv) - preco_base
+                data_venda = str(sale_dates.get(moto_id) or '')
+                if not data_venda:
+                    continue
+                # Normalizar para YYYY-MM
+                ym = None
+                if '-' in data_venda and len(data_venda) >= 7:
+                    ym = data_venda[:7]
+                elif '/' in data_venda:
+                    try:
+                        apenas_data = data_venda.split(' ')[0]
+                        d, m, a = apenas_data.split('/')
+                        ym = f"{a}-{m}"
+                    except Exception:
+                        ym = None
+                if not ym:
+                    continue
+                somas[ym] = somas.get(ym, 0.0) + lucro
+            except Exception:
+                continue
+        # Ordenar pelo mês
+        return dict(sorted(somas.items()))
+    except Exception:
+        return {}
 @app.route("/editar_moto/<int:id>", methods=["GET", "POST"])
 def editar_moto(id):
     if "usuario" not in session or session["tipo"] not in ["admin", "vendedor"]:
